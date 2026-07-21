@@ -5,13 +5,19 @@ The persistence layer of the NLP Scraper project.
 Stores the scraped and NLP-analyzed data (text, keywords, sentiment,
 entities) produced by `pipeline`, so it can be queried by `app`.
 
+Storage engine: **MongoDB**.
+
 ## Status
 
-Not implemented yet. `Dockerfile` and `docker-compose.yml` are empty
-skeletons to be filled in once the storage engine is chosen.
+`Dockerfile` builds the `mongo:7` image (extend it with init scripts under
+`docker-entrypoint-initdb.d/` if needed). `docker-compose.yml` runs it with
+credentials pulled from the root `.env`.
 
-## Run (once implemented)
+## Run
+
+From this directory, pointing at the root `.env`:
 
 ```bash
-docker compose up
+docker compose --env-file ../.env up -d
 ```
+

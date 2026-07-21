@@ -1,14 +1,15 @@
 # app
 
-The API layer of the NLP Scraper project.
+The API layer of the NLP Scraper project, built with FastAPI.
 
-Exposes the data produced by the `pipeline` (scraped, cleaned, and NLP-analyzed
-text) through an API so it can be searched, filtered, and analyzed without
-manually reading each document.
+Serves the articles stored in MongoDB (`storage`) by `pipeline`, with
+pagination, for `frontend` to consume.
 
-## Status
+## Endpoints
 
-Not implemented yet. Scaffolding only (`requirements.txt`, `setup.sh`, `run.sh`).
+- `GET /api/articles?page=1&page_size=20` — paginated article list, sorted by `publish_date` descending.
+  Returns `{ items, page, page_size, total, total_pages }`.
+- `GET /api/articles/{id}` — single article by id.
 
 ## Setup
 
@@ -21,3 +22,7 @@ Not implemented yet. Scaffolding only (`requirements.txt`, `setup.sh`, `run.sh`)
 ```bash
 ./run.sh
 ```
+
+Requires `storage` (MongoDB) to be running. Serves on `http://localhost:8000`
+(configurable via `APP_HOST`/`APP_PORT` in the root `.env`). Interactive docs
+at `/docs`.

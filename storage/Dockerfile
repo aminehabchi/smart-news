@@ -1,2 +1,4 @@
-# Dockerfile for the storage service.
-# Base image and build steps to be defined once the storage engine is chosen.
+FROM mongo:7
+
+# Place custom init scripts (executed on first container start) here, e.g.:
+# COPY ./init/ /docker-entrypoint-initdb.d/

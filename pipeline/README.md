@@ -2,14 +2,17 @@
 
 The data-processing pipeline of the NLP Scraper project.
 
-Orchestrates the end-to-end flow: scrape web pages, clean the HTML into raw
-text, then run NLP tasks (keyword extraction, sentiment analysis, named
-entity recognition) before handing the results off to `storage`.
+`orchestrator.py` scrapes the latest articles from techcrunch.com/latest/
+with Playwright and stores them in MongoDB (`storage`). NLP processing
+(keywords, sentiment, NER) is not implemented yet.
 
-## Status
+## Structure
 
-`orchestrator.py` is a placeholder (empty). Scaffolding only
-(`requirements.txt`, `setup.sh`, `run.sh`).
+- `scrapers/techcrunch.py` — Playwright scraper. `scrape_latest(limit=20)` returns a list of dicts:
+  `creation_date` (when scraped), `publish_date`, `title`, `body`, `topics` (array),
+  `author` (`{name, link}`), `url`.
+- `db.py` — MongoDB access (`MONGO_URI` from the root `.env`), upserts articles by `url`.
+- `orchestrator.py` — entry point: scrape then insert.
 
 ## Setup
 
@@ -22,3 +25,5 @@ entity recognition) before handing the results off to `storage`.
 ```bash
 ./run.sh
 ```
+
+Requires `storage` (MongoDB) to be running.

@@ -4,6 +4,4 @@ set -e
 cd "$(dirname "$0")"
 
 source venv/bin/activate
-
-# TODO: replace with the actual entry point once the app is implemented
-echo "app entry point not implemented yet"
+uvicorn main:app --host "${APP_HOST:-0.0.0.0}" --port "${APP_PORT:-8000}" --reload

@@ -1,1 +1,5 @@
-# Dependencies for the app (API layer) - to be added.
+fastapi
+uvicorn[standard]
+pymongo
+python-dotenv
+apscheduler

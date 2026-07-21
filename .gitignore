@@ -15,6 +15,11 @@ env/
 build/
 dist/
 
+# Node / Angular
+node_modules/
+.angular/
+frontend/dist/
+
 # Testing / tooling
 .pytest_cache/
 .mypy_cache/
@@ -40,3 +45,7 @@ Thumbs.db
 # Data / storage volumes
 storage/data/
 storage/volumes/
+
+# Claude
+.claude/
+

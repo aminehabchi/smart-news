@@ -1,0 +1,23 @@
+<h1>Saved for Later</h1>
+
+@if (loading()) {
+  <p>Loading…</p>
+} @else if (articles().length === 0) {
+  <p>No saved articles yet. Open an article and click "Save for later".</p>
+}
+
+<div class="article-grid">
+  @for (article of articles(); track article.id) {
+    <div class="article-card">
+      <a [routerLink]="['/articles', article.id]">
+        <h2>{{ article.title }}</h2>
+      </a>
+      <p class="excerpt">{{ article.body?.slice(0, 140) }}&hellip;</p>
+      <div class="meta">
+        <span class="author">{{ article.author.name }}</span>
+        <span class="date">{{ article.publish_date | date: 'mediumDate' }}</span>
+      </div>
+      <button class="unsave-btn" (click)="unsave(article.id)">Remove</button>
+    </div>
+  }
+</div>

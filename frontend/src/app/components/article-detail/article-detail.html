@@ -1,0 +1,39 @@
+@if (article(); as a) {
+  <div class="top-row">
+    <a class="back-link" routerLink="/">&larr; Back to list</a>
+    <button class="save-btn" [class.saved]="savedArticles.isSaved(a.id)" (click)="toggleSave()">
+      {{ savedArticles.isSaved(a.id) ? '✓ Saved for later' : '+ Save for later' }}
+    </button>
+  </div>
+  <h1>{{ a.title }}</h1>
+  <div class="meta">
+    @if (a.author.link) {
+      <a [href]="a.author.link" target="_blank" rel="noopener">{{ a.author.name }}</a>
+    } @else {
+      <span>{{ a.author.name }}</span>
+    }
+    <span>{{ a.publish_date | date: 'medium' }}</span>
+    @if (a.source) {
+      <a class="source-badge" [href]="'https://' + a.source" target="_blank" rel="noopener">{{
+        a.source | sourceName
+      }}</a>
+    }
+  </div>
+  <div class="topics">
+    @for (topic of a.topics; track topic) {
+      <span class="topic-chip">{{ topic }}</span>
+    }
+  </div>
+  <article class="body">
+    @for (paragraph of (a.body ?? '').split('\n\n'); track $index) {
+      <p>{{ paragraph }}</p>
+    }
+  </article>
+  @if (a.url) {
+    <a class="source-link" [href]="a.url" target="_blank" rel="noopener"
+      >Read original on {{ a.source | sourceName }} &rarr;</a
+    >
+  }
+} @else {
+  <p>Loading…</p>
+}

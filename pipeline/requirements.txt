@@ -1,1 +1,3 @@
-# Dependencies for the pipeline (scraping + NLP) - to be added.
+playwright
+pymongo
+python-dotenv
