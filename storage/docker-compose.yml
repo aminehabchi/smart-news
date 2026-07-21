@@ -1,0 +1,4 @@
+version: "3.9"
+
+services:
+  # storage service(s) to be defined once the storage engine is chosen
