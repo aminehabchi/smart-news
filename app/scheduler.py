@@ -1,11 +1,11 @@
-"""Schedules the daily pipeline run (scrape + store) from within the API process."""
+"""Schedules the hourly pipeline run (scrape + store) from within the API process."""
 
 import logging
 import subprocess
 from pathlib import Path
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
 logger = logging.getLogger("scheduler")
 
@@ -29,6 +29,6 @@ def run_pipeline() -> None:
 
 def start_scheduler() -> BackgroundScheduler:
     scheduler = BackgroundScheduler()
-    scheduler.add_job(run_pipeline, CronTrigger(hour=6, minute=0), id="daily_scrape")
+    scheduler.add_job(run_pipeline, IntervalTrigger(hours=1), id="hourly_scrape")
     scheduler.start()
     return scheduler

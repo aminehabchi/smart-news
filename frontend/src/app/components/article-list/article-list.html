@@ -1,4 +1,17 @@
-<h1>{{ query() ? 'Search results for "' + query() + '"' : 'Latest Articles' }}</h1>
+<div class="source-filters">
+  <button class="source-filter-chip" [class.active]="!source()" (click)="filterBySource('')">
+    All
+  </button>
+  @for (s of sources(); track s) {
+    <button
+      class="source-filter-chip"
+      [class.active]="source() === s"
+      (click)="filterBySource(s)"
+    >
+      {{ s | sourceName }}
+    </button>
+  }
+</div>
 
 @if (loading()) {
   <p>Loading…</p>

@@ -37,14 +37,24 @@ def _to_article(doc: dict) -> Article:
     return Article(**doc)
 
 
+@app.get("/api/sources", response_model=list[str])
+def list_sources():
+    return sorted(s for s in get_collection().distinct("source") if s)
+
+
 @app.get("/api/articles", response_model=ArticlePage)
 def list_articles(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     q: str | None = Query(None, min_length=1),
+    source: str | None = Query(None),
 ):
     collection = get_collection()
-    query = {"$text": {"$search": q}} if q else {}
+    query: dict = {}
+    if q:
+        query["$text"] = {"$search": q}
+    if source:
+        query["source"] = source
 
     total = collection.count_documents(query)
     skip = (page - 1) * page_size

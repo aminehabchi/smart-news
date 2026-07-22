@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Article } from '../../models/article.model';
 import { SourceNamePipe } from '../../pipes/source-name-pipe';
@@ -15,6 +15,7 @@ import { ArticleService } from '../../services/article';
 export class ArticleList implements OnInit {
   private readonly articleService = inject(ArticleService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly pageSize = 18;
 
@@ -23,10 +24,15 @@ export class ArticleList implements OnInit {
   readonly totalPages = signal(1);
   readonly loading = signal(false);
   readonly query = signal('');
+  readonly source = signal('');
+  readonly sources = signal<string[]>([]);
 
   ngOnInit(): void {
+    this.articleService.listSources().subscribe((sources) => this.sources.set(sources));
+
     this.route.queryParamMap.subscribe((params) => {
       this.query.set(params.get('q') ?? '');
+      this.source.set(params.get('source') ?? '');
       this.page.set(1);
       this.load();
     });
@@ -34,13 +40,23 @@ export class ArticleList implements OnInit {
 
   load(): void {
     this.loading.set(true);
-    this.articleService.list(this.page(), this.pageSize, this.query()).subscribe({
-      next: (result) => {
-        this.articles.set(result.items);
-        this.totalPages.set(result.total_pages);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
+    this.articleService
+      .list(this.page(), this.pageSize, { q: this.query(), source: this.source() })
+      .subscribe({
+        next: (result) => {
+          this.articles.set(result.items);
+          this.totalPages.set(result.total_pages);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
+  }
+
+  filterBySource(source: string): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { source: source || null },
+      queryParamsHandling: 'merge',
     });
   }
 

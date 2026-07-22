@@ -8,7 +8,7 @@
 
   <h2>How it works</h2>
   <ol>
-    <li><strong>Scrape</strong> — <code>pipeline</code> uses Playwright to pull the latest articles from TechCrunch, running on a daily 6:00am schedule.</li>
+    <li><strong>Scrape</strong> — <code>pipeline</code> uses Playwright to pull the latest articles from TechCrunch and The Verge, running on an hourly schedule.</li>
     <li><strong>Clean</strong> — the raw HTML is reduced to plain title/body text, author, publish date, and topics.</li>
     <li><strong>Store</strong> — cleaned articles are upserted into MongoDB (<code>storage</code>), keyed by URL.</li>
     <li><strong>Serve</strong> — <code>app</code> exposes a paginated REST API over the stored articles.</li>

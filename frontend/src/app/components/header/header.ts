@@ -1,7 +1,13 @@
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { map } from 'rxjs';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
+import { filter, map } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -18,7 +24,18 @@ export class Header {
     { initialValue: '' },
   );
 
+  readonly isArticlesPage = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects.split('?')[0] === '/'),
+    ),
+    { initialValue: this.router.url.split('?')[0] === '/' },
+  );
+
   search(term: string): void {
-    this.router.navigate(['/'], { queryParams: { q: term.trim() || null } });
+    this.router.navigate(['/'], {
+      queryParams: { q: term.trim() || null },
+      queryParamsHandling: 'merge',
+    });
   }
 }
