@@ -8,7 +8,26 @@ import { Article, ArticlePage } from '../models/article.model';
 export interface ArticleListFilters {
   q?: string;
   source?: string;
+  title?: string;
+  body?: string;
+  persons?: string;
+  organizations?: string;
+  locations?: string;
+  dates_times?: string;
+  quantities_percentages?: string;
 }
+
+const FILTER_KEYS: (keyof ArticleListFilters)[] = [
+  'q',
+  'source',
+  'title',
+  'body',
+  'persons',
+  'organizations',
+  'locations',
+  'dates_times',
+  'quantities_percentages',
+];
 
 @Injectable({
   providedIn: 'root',
@@ -18,11 +37,11 @@ export class ArticleService {
 
   list(page: number, pageSize: number, filters: ArticleListFilters = {}): Observable<ArticlePage> {
     let params = new HttpParams().set('page', page).set('page_size', pageSize);
-    if (filters.q) {
-      params = params.set('q', filters.q);
-    }
-    if (filters.source) {
-      params = params.set('source', filters.source);
+    for (const key of FILTER_KEYS) {
+      const value = filters[key];
+      if (value) {
+        params = params.set(key, value);
+      }
     }
     return this.http.get<ArticlePage>(`${API_BASE_URL}/articles`, { params });
   }

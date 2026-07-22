@@ -1,3 +1,4 @@
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -37,6 +38,12 @@ def _to_article(doc: dict) -> Article:
     return Article(**doc)
 
 
+def _contains(value: str) -> dict:
+    """Case-insensitive substring match, with the term escaped so it's
+    matched literally rather than interpreted as a regex pattern."""
+    return {"$regex": re.escape(value), "$options": "i"}
+
+
 @app.get("/api/sources", response_model=list[str])
 def list_sources():
     return sorted(s for s in get_collection().distinct("source") if s)
@@ -48,6 +55,13 @@ def list_articles(
     page_size: int = Query(20, ge=1, le=100),
     q: str | None = Query(None, min_length=1),
     source: str | None = Query(None),
+    title: str | None = Query(None, min_length=1),
+    body: str | None = Query(None, min_length=1),
+    persons: str | None = Query(None, min_length=1),
+    organizations: str | None = Query(None, min_length=1),
+    locations: str | None = Query(None, min_length=1),
+    dates_times: str | None = Query(None, min_length=1),
+    quantities_percentages: str | None = Query(None, min_length=1),
 ):
     collection = get_collection()
     query: dict = {}
@@ -55,6 +69,20 @@ def list_articles(
         query["$text"] = {"$search": q}
     if source:
         query["source"] = source
+    if title:
+        query["title"] = _contains(title)
+    if body:
+        query["body"] = _contains(body)
+    if persons:
+        query["entities.persons"] = _contains(persons)
+    if organizations:
+        query["entities.organizations"] = _contains(organizations)
+    if locations:
+        query["entities.locations"] = _contains(locations)
+    if dates_times:
+        query["entities.dates_times"] = _contains(dates_times)
+    if quantities_percentages:
+        query["entities.quantities_percentages"] = _contains(quantities_percentages)
 
     total = collection.count_documents(query)
     skip = (page - 1) * page_size

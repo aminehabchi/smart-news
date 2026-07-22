@@ -4,7 +4,17 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Article } from '../../models/article.model';
 import { SourceNamePipe } from '../../pipes/source-name-pipe';
-import { ArticleService } from '../../services/article';
+import { ArticleListFilters, ArticleService } from '../../services/article';
+
+const ADVANCED_FILTER_KEYS: (keyof ArticleListFilters)[] = [
+  'title',
+  'body',
+  'persons',
+  'organizations',
+  'locations',
+  'dates_times',
+  'quantities_percentages',
+];
 
 @Component({
   selector: 'app-article-list',
@@ -26,6 +36,8 @@ export class ArticleList implements OnInit {
   readonly query = signal('');
   readonly source = signal('');
   readonly sources = signal<string[]>([]);
+  readonly showAdvanced = signal(false);
+  readonly advancedFilters = signal<ArticleListFilters>({});
 
   ngOnInit(): void {
     this.articleService.listSources().subscribe((sources) => this.sources.set(sources));
@@ -33,6 +45,19 @@ export class ArticleList implements OnInit {
     this.route.queryParamMap.subscribe((params) => {
       this.query.set(params.get('q') ?? '');
       this.source.set(params.get('source') ?? '');
+
+      const advanced: ArticleListFilters = {};
+      for (const key of ADVANCED_FILTER_KEYS) {
+        const value = params.get(key);
+        if (value) {
+          advanced[key] = value;
+        }
+      }
+      this.advancedFilters.set(advanced);
+      if (Object.keys(advanced).length > 0) {
+        this.showAdvanced.set(true);
+      }
+
       this.page.set(1);
       this.load();
     });
@@ -41,7 +66,11 @@ export class ArticleList implements OnInit {
   load(): void {
     this.loading.set(true);
     this.articleService
-      .list(this.page(), this.pageSize, { q: this.query(), source: this.source() })
+      .list(this.page(), this.pageSize, {
+        q: this.query(),
+        source: this.source(),
+        ...this.advancedFilters(),
+      })
       .subscribe({
         next: (result) => {
           this.articles.set(result.items);
@@ -57,6 +86,50 @@ export class ArticleList implements OnInit {
       relativeTo: this.route,
       queryParams: { source: source || null },
       queryParamsHandling: 'merge',
+    });
+  }
+
+  toggleAdvanced(): void {
+    this.showAdvanced.update((value) => !value);
+  }
+
+  applyAdvancedFilters(filters: ArticleListFilters): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        title: filters.title?.trim() || null,
+        body: filters.body?.trim() || null,
+        persons: filters.persons?.trim() || null,
+        organizations: filters.organizations?.trim() || null,
+        locations: filters.locations?.trim() || null,
+        dates_times: filters.dates_times?.trim() || null,
+        quantities_percentages: filters.quantities_percentages?.trim() || null,
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  clearAdvancedFilters(): void {
+    this.applyAdvancedFilters({});
+  }
+
+  onApplyAdvanced(
+    title: string,
+    body: string,
+    persons: string,
+    organizations: string,
+    locations: string,
+    datesTimes: string,
+    quantitiesPercentages: string,
+  ): void {
+    this.applyAdvancedFilters({
+      title,
+      body,
+      persons,
+      organizations,
+      locations,
+      dates_times: datesTimes,
+      quantities_percentages: quantitiesPercentages,
     });
   }
 

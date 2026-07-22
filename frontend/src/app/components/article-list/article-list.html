@@ -13,6 +13,84 @@
   }
 </div>
 
+<div class="advanced-filters">
+  <button type="button" class="advanced-toggle" (click)="toggleAdvanced()">
+    {{ showAdvanced() ? '▾' : '▸' }} Advanced filters
+  </button>
+
+  @if (showAdvanced()) {
+    <form
+      class="advanced-filters-form"
+      (submit)="
+        $event.preventDefault();
+        onApplyAdvanced(
+          titleInput.value,
+          bodyInput.value,
+          personsInput.value,
+          organizationsInput.value,
+          locationsInput.value,
+          datesTimesInput.value,
+          quantitiesInput.value
+        )
+      "
+    >
+      <label>
+        Title
+        <input #titleInput type="text" [value]="advancedFilters().title ?? ''" placeholder="Search in title…" />
+      </label>
+      <label>
+        Body
+        <input #bodyInput type="text" [value]="advancedFilters().body ?? ''" placeholder="Search in body…" />
+      </label>
+      <label>
+        Persons
+        <input #personsInput type="text" [value]="advancedFilters().persons ?? ''" placeholder="e.g. Tim Cook" />
+      </label>
+      <label>
+        Organizations
+        <input
+          #organizationsInput
+          type="text"
+          [value]="advancedFilters().organizations ?? ''"
+          placeholder="e.g. Apple"
+        />
+      </label>
+      <label>
+        Locations
+        <input
+          #locationsInput
+          type="text"
+          [value]="advancedFilters().locations ?? ''"
+          placeholder="e.g. California"
+        />
+      </label>
+      <label>
+        Dates &amp; Times
+        <input
+          #datesTimesInput
+          type="text"
+          [value]="advancedFilters().dates_times ?? ''"
+          placeholder="e.g. Monday"
+        />
+      </label>
+      <label>
+        Quantities &amp; Percentages
+        <input
+          #quantitiesInput
+          type="text"
+          [value]="advancedFilters().quantities_percentages ?? ''"
+          placeholder="e.g. 12%"
+        />
+      </label>
+
+      <div class="advanced-filters-actions">
+        <button type="submit" class="apply-btn">Apply</button>
+        <button type="button" class="clear-btn" (click)="clearAdvancedFilters()">Clear filters</button>
+      </div>
+    </form>
+  }
+</div>
+
 @if (loading()) {
   <p>Loading…</p>
 } @else if (articles().length === 0) {
