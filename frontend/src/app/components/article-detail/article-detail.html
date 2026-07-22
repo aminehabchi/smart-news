@@ -24,6 +24,20 @@
       <span class="topic-chip">{{ topic }}</span>
     }
   </div>
+  @if (entityGroups().length) {
+    <div class="entities">
+      @for (group of entityGroups(); track group.label) {
+        <div class="entity-group">
+          <span class="entity-label">{{ group.label }}</span>
+          <div class="entity-chips">
+            @for (value of group.values; track value) {
+              <span class="entity-chip">{{ value }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
   <article class="body">
     @for (paragraph of (a.body ?? '').split('\n\n'); track $index) {
       <p>{{ paragraph }}</p>

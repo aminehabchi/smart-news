@@ -2,3 +2,6 @@ playwright
 pymongo
 python-dotenv
 pydantic
+nltk
+scikit-learn
+spacy

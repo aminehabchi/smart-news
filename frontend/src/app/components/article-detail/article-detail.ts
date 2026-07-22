@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Article } from '../../models/article.model';
@@ -19,6 +19,20 @@ export class ArticleDetail implements OnInit {
   readonly savedArticles = inject(SavedArticlesService);
 
   readonly article = signal<Article | null>(null);
+
+  readonly entityGroups = computed(() => {
+    const entities = this.article()?.entities;
+    if (!entities) {
+      return [];
+    }
+    return [
+      { label: 'Persons', values: entities.persons },
+      { label: 'Organizations', values: entities.organizations },
+      { label: 'Locations', values: entities.locations },
+      { label: 'Dates & Times', values: entities.dates_times },
+      { label: 'Quantities & Percentages', values: entities.quantities_percentages },
+    ].filter((group) => group.values.length > 0);
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

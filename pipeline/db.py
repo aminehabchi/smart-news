@@ -8,6 +8,7 @@ from pymongo.collection import Collection
 from model import Article
 
 ARTICLES_COLLECTION = "articles"
+WORD_FREQUENCIES_COLLECTION = "word_frequencies"
 
 
 def get_collection(name: str = ARTICLES_COLLECTION) -> Collection:
@@ -26,3 +27,7 @@ def insert_articles(articles: list[Article]) -> None:
             {"$set": doc},
             upsert=True,
         )
+
+
+def insert_word_frequencies(doc: dict) -> None:
+    get_collection(WORD_FREQUENCIES_COLLECTION).insert_one(doc)
