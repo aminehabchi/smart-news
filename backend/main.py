@@ -1,3 +1,4 @@
+import logging
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -14,12 +15,18 @@ from scheduler import start_scheduler
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger("api")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Starting up")
     ensure_indexes()
     scheduler = start_scheduler()
+    logger.info("Startup complete, hourly pipeline scheduler running")
     yield
+    logger.info("Shutting down")
     scheduler.shutdown()
 
 
@@ -111,10 +118,12 @@ def get_article(article_id: str):
     try:
         object_id = ObjectId(article_id)
     except InvalidId:
+        logger.warning("Article lookup failed: invalid id %r", article_id)
         raise HTTPException(status_code=404, detail="Article not found")
 
     doc = get_collection().find_one({"_id": object_id})
     if not doc:
+        logger.warning("Article lookup failed: no article with id %s", article_id)
         raise HTTPException(status_code=404, detail="Article not found")
 
     return _to_article(doc)

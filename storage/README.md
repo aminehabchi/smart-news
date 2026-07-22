@@ -3,7 +3,7 @@
 The persistence layer of the NLP Scraper project.
 
 Stores the scraped and NLP-analyzed data (text, keywords, sentiment,
-entities) produced by `pipeline`, so it can be queried by `app`.
+entities) produced by `pipeline`, so it can be queried by `backend`.
 
 Storage engine: **MongoDB**.
 

@@ -3,7 +3,7 @@
 The UI of the NLP Scraper project, built with Angular (generated via
 `ng new`, standalone components, routing).
 
-Displays the articles stored in `storage` (MongoDB), served by `app`'s API.
+Displays the articles stored in `storage` (MongoDB), served by `backend`'s API.
 
 ## Structure
 
@@ -25,4 +25,4 @@ Displays the articles stored in `storage` (MongoDB), served by `app`'s API.
 ./run.sh
 ```
 
-Requires `app` (the API) running on `http://localhost:8000` and `storage` (MongoDB) up.
+Requires `backend` (the API) running on `http://localhost:8000` and `storage` (MongoDB) up.

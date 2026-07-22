@@ -1,5 +1,6 @@
 """Entry point: scrape the latest articles from all sources, clean them, and store them in MongoDB."""
 
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -13,6 +14,8 @@ from text_preprocessing.preprocessing import clean_article
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
+logger = logging.getLogger("orchestrator")
+
 SCRAPERS = [techcrunch, theverge, arstechnica]
 
 
@@ -22,8 +25,13 @@ def main() -> None:
     all_articles: list[Article] = []
 
     for scraper in SCRAPERS:
-        raw_articles = scraper.scrape_latest(limit=20)
-        articles = [clean_article(Article(**data)) for data in raw_articles]
+        try:
+            raw_articles = scraper.scrape_latest(limit=20)
+            articles = [clean_article(Article(**data)) for data in raw_articles]
+        except Exception:
+            logger.error("%s: scraping failed, skipping this source.", scraper.SOURCE, exc_info=True)
+            continue
+
         batches.append((scraper.SOURCE, articles))
         all_articles.extend(articles)
         total += len(articles)
@@ -42,7 +50,7 @@ def main() -> None:
 
     for source, articles in batches:
         insert_articles(articles)
-        print(f"{source}: inserted/updated {len(articles)} articles.")
+        logger.info("%s: inserted/updated %d articles.", source, len(articles))
 
     frequencies = (
         word_frequencies(
@@ -55,15 +63,16 @@ def main() -> None:
     insert_word_frequencies(
         {
             "run_date": datetime.now(timezone.utc).isoformat(),
-            "sources": [scraper.SOURCE for scraper in SCRAPERS],
+            "sources": [source for source, _ in batches],
             "article_count": total,
             "word_frequencies": frequencies,
         }
     )
     top_words = list(frequencies.items())[:10]
 
-    print(f"Done. {total} articles processed. Top words: {top_words}")
+    logger.info("Done. %d articles processed. Top words: %s", total, top_words)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     main()

@@ -1,4 +1,4 @@
-# app
+# backend
 
 The API layer of the NLP Scraper project, built with FastAPI.
 

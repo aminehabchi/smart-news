@@ -6,11 +6,16 @@ for spaCy's NER model -- so it reads Article.title/body/topics directly
 rather than the lowercased text_preprocessing output.
 """
 
+import logging
+
 import spacy
 
 from model import Article, Entities
 from text_preprocessing.preprocessing import raw_text
 
+logger = logging.getLogger("nlp_engine.ner")
+
+logger.info("Loading spaCy model en_core_web_sm")
 _NLP = spacy.load("en_core_web_sm")
 
 _LOCATION_LABELS = {"GPE", "LOC"}

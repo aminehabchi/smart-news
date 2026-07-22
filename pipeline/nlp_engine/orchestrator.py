@@ -5,13 +5,17 @@ via the `entities` field, so each run only picks up articles no prior run
 (of this or any nlp_engine stage) has processed yet.
 """
 
+import logging
 from pathlib import Path
 
-from dotenv import load_dotenv
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger("nlp_engine.orchestrator")
 
-from db import get_collection
-from model import Article
-from nlp_engine.ner import extract_entities
+from dotenv import load_dotenv  # noqa: E402
+
+from db import get_collection  # noqa: E402
+from model import Article  # noqa: E402
+from nlp_engine.ner import extract_entities  # noqa: E402 -- logs at import time (spaCy model load), so basicConfig above must run first
 
 load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
@@ -33,7 +37,7 @@ def main() -> None:
         )
         processed += 1
 
-    print(f"NER: updated {processed} articles.")
+    logger.info("NER: updated %d articles.", processed)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,14 @@
 """MongoDB access for the pipeline."""
 
+import logging
 import os
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
 from model import Article
+
+logger = logging.getLogger("db")
 
 ARTICLES_COLLECTION = "articles"
 WORD_FREQUENCIES_COLLECTION = "word_frequencies"
@@ -27,7 +30,9 @@ def insert_articles(articles: list[Article]) -> None:
             {"$set": doc},
             upsert=True,
         )
+    logger.info("Upserted %d articles into MongoDB", len(articles))
 
 
 def insert_word_frequencies(doc: dict) -> None:
     get_collection(WORD_FREQUENCIES_COLLECTION).insert_one(doc)
+    logger.info("Stored word_frequencies for run_date=%s", doc.get("run_date"))
