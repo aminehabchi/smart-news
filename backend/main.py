@@ -8,6 +8,7 @@ from bson.errors import InvalidId
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pymongo import ReturnDocument
 
 from db import ensure_indexes, get_collection
 from models import Article, ArticlePage
@@ -35,7 +36,7 @@ app = FastAPI(title="NLP Scraper API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200"],
-    allow_methods=["GET"],
+    allow_methods=["GET", "PUT"],
     allow_headers=["*"],
 )
 
@@ -127,3 +128,30 @@ def get_article(article_id: str):
         raise HTTPException(status_code=404, detail="Article not found")
 
     return _to_article(doc)
+
+
+@app.put("/api/articles/{article_id}/save", response_model=Article)
+def set_article_saved(article_id: str, saved: bool = Query(...)):
+    try:
+        object_id = ObjectId(article_id)
+    except InvalidId:
+        logger.warning("Save toggle failed: invalid id %r", article_id)
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    collection = get_collection()
+    doc = collection.find_one_and_update(
+        {"_id": object_id},
+        {"$set": {"saved": saved}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if not doc:
+        logger.warning("Save toggle failed: no article with id %s", article_id)
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    return _to_article(doc)
+
+
+@app.get("/api/saved", response_model=list[Article])
+def list_saved():
+    cursor = get_collection().find({"saved": True}).sort("publish_date", -1)
+    return [_to_article(doc) for doc in cursor]

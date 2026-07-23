@@ -22,9 +22,11 @@ class Article(BaseModel):
     body: str | None = None
     entities: Entities | None = None
     topics: list[str] = []
+    predicted_topic: str | None = None
     author: Author
     url: str | None = None
     source: str | None = None
+    saved: bool = False
 
 
 class ArticlePage(BaseModel):

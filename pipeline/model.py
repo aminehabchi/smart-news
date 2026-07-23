@@ -40,6 +40,10 @@ class Article(BaseModel):
     preprocessing: Preprocessing | None = None
     entities: Entities | None = None
     topics: list[str] = []
+    # Single predicted category (business/entertainment/politics/sport/tech),
+    # see topic_classifier/orchestrator.py. Distinct from `topics` above,
+    # which are free-form tags/keywords scraped from the source site.
+    predicted_topic: str | None = None
     author: Author
     url: str | None = None
     source: str | None = None

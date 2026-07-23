@@ -1,7 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { catchError, forkJoin, of } from 'rxjs';
 
 import { Article } from '../../models/article.model';
 import { ArticleService } from '../../services/article';
@@ -25,23 +24,18 @@ export class SavedList implements OnInit {
   }
 
   load(): void {
-    const ids = Object.keys(this.savedArticles.ids());
-    if (ids.length === 0) {
-      this.articles.set([]);
-      return;
-    }
-
     this.loading.set(true);
-    forkJoin(
-      ids.map((id) => this.articleService.get(id).pipe(catchError(() => of(null)))),
-    ).subscribe((results) => {
-      this.articles.set(results.filter((a): a is Article => a !== null));
-      this.loading.set(false);
+    this.articleService.listSaved().subscribe({
+      next: (articles) => {
+        this.articles.set(articles);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
   }
 
   unsave(id: string): void {
     this.savedArticles.toggle(id);
-    this.load();
+    this.articles.update((articles) => articles.filter((article) => article.id !== id));
   }
 }

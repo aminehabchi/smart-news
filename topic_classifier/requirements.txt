@@ -1,0 +1,7 @@
+nltk
+pydantic
+scikit-learn
+joblib
+matplotlib
+pymongo
+python-dotenv

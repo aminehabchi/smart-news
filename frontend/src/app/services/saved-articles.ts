@@ -1,40 +1,41 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 
-const STORAGE_KEY = 'saved-articles';
+import { ArticleService } from './article';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SavedArticlesService {
-  private readonly savedIds = signal<Record<string, true>>(this.readFromStorage());
+  private readonly articleService = inject(ArticleService);
+
+  private readonly savedIds = signal<Record<string, true>>({});
 
   readonly ids = this.savedIds.asReadonly();
+
+  constructor() {
+    this.articleService.listSaved().subscribe((articles) => {
+      this.savedIds.set(Object.fromEntries(articles.map((article) => [article.id, true as const])));
+    });
+  }
 
   isSaved(id: string): boolean {
     return !!this.savedIds()[id];
   }
 
   toggle(id: string): void {
-    const current = { ...this.savedIds() };
-    if (current[id]) {
-      delete current[id];
+    const saved = !this.isSaved(id);
+    const previous = this.savedIds();
+
+    const next = { ...previous };
+    if (saved) {
+      next[id] = true;
     } else {
-      current[id] = true;
+      delete next[id];
     }
-    this.savedIds.set(current);
-    this.writeToStorage(current);
-  }
+    this.savedIds.set(next);
 
-  private readFromStorage(): Record<string, true> {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  }
-
-  private writeToStorage(value: Record<string, true>): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+    this.articleService.setSaved(id, saved).subscribe({
+      error: () => this.savedIds.set(previous),
+    });
   }
 }

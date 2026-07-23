@@ -193,6 +193,12 @@
   white-space: nowrap;
 }
 
+.reading-time {
+  margin-top: 0.4rem;
+  color: var(--color-fg-muted);
+  font-size: 0.7rem;
+}
+
 .pagination {
   display: flex;
   align-items: center;

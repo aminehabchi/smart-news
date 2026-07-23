@@ -1,24 +1,32 @@
 <div class="about">
   <h1>About NLP Scraper</h1>
   <p class="lead">
-    A data-processing pipeline that automatically collects information from
-    websites, extracts and cleans the useful text, analyzes it with NLP, and
-    stores the results for search and analysis.
+    NLP Scraper keeps you on top of tech news without the manual digging. It
+    automatically pulls in the latest articles from TechCrunch, The Verge, and
+    Ars Technica every hour, then reads each one for you — pulling out the
+    people, companies, places, dates and figures it mentions, and predicting
+    its topic — so you can search, filter, and find what matters faster than
+    skimming three separate sites.
   </p>
 
-  <h2>How it works</h2>
+  <h2>What it does for you</h2>
+  <ul>
+    <li><strong>Always up to date</strong> — new articles from all three sources are fetched automatically, hourly.</li>
+    <li><strong>Search beyond the headline</strong> — full-text search covers article titles and body text, not just titles.</li>
+    <li><strong>Filter by who, what, and where</strong> — narrow results by person, organization, location, date, or quantity mentioned in an article, not just keywords.</li>
+    <li><strong>Know the topic at a glance</strong> — every article is automatically classified (business, tech, sport, entertainment, or politics) and tagged with the entities it mentions.</li>
+    <li><strong>Know the time commitment</strong> — each article shows an estimated reading time before you click in.</li>
+    <li><strong>Save articles for later</strong> — bookmark anything and come back to it anytime from the Saved page.</li>
+  </ul>
+
+  <h2>How to use it</h2>
   <ol>
-    <li><strong>Scrape</strong> — <code>pipeline</code> uses Playwright to pull the latest articles from TechCrunch and The Verge, running on an hourly schedule.</li>
-    <li><strong>Clean</strong> — the raw HTML is reduced to plain title/body text, author, publish date, and topics.</li>
-    <li><strong>Store</strong> — cleaned articles are upserted into MongoDB (<code>storage</code>), keyed by URL.</li>
-    <li><strong>Serve</strong> — <code>app</code> exposes a paginated REST API over the stored articles.</li>
-    <li><strong>Explore</strong> — this Angular app (<code>frontend</code>) lets you browse and read them.</li>
+    <li><strong>Browse</strong> — the Articles page lists the latest stories. Use the source chips (All / Techcrunch / Theverge / Arstechnica) to narrow the feed to one outlet.</li>
+    <li><strong>Search</strong> — use the search bar in the top bar to search across article titles and text.</li>
+    <li>
+      <strong>Filter</strong> — open <em>Advanced filters</em> on the Articles page to search by title, body text, or by entity: persons, organizations, locations, dates &amp; times, or quantities &amp; percentages.
+    </li>
+    <li><strong>Read</strong> — click any article to see its full details: author, source, reading time, predicted topic, tags, extracted entities, and the full article text, plus a link back to the original.</li>
+    <li><strong>Save for later</strong> — click <em>+ Save for later</em> on an article's page to bookmark it. Find everything you've saved anytime on the <strong>Saved</strong> page.</li>
   </ol>
-
-  <h2>What's next</h2>
-  <p>
-    Keyword extraction, sentiment analysis, and named entity recognition
-    (NER) — to surface topics, opinions, people, organizations, and
-    locations — are planned but not implemented yet.
-  </p>
 </div>

@@ -28,3 +28,4 @@ def ensure_indexes() -> None:
         [("title", "text"), ("body", "text"), ("topics", "text")],
         name="article_search",
     )
+    get_collection().create_index("saved")

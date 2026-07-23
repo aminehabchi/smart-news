@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Article } from '../../models/article.model';
+import { ReadingTimePipe } from '../../pipes/reading-time-pipe';
 import { SourceNamePipe } from '../../pipes/source-name-pipe';
 import { ArticleListFilters, ArticleService } from '../../services/article';
 
@@ -18,7 +19,7 @@ const ADVANCED_FILTER_KEYS: (keyof ArticleListFilters)[] = [
 
 @Component({
   selector: 'app-article-list',
-  imports: [RouterLink, DatePipe, SourceNamePipe],
+  imports: [RouterLink, DatePipe, SourceNamePipe, ReadingTimePipe],
   templateUrl: './article-list.html',
   styleUrl: './article-list.scss',
 })

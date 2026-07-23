@@ -53,4 +53,13 @@ export class ArticleService {
   listSources(): Observable<string[]> {
     return this.http.get<string[]>(`${API_BASE_URL}/sources`);
   }
+
+  listSaved(): Observable<Article[]> {
+    return this.http.get<Article[]>(`${API_BASE_URL}/saved`);
+  }
+
+  setSaved(id: string, saved: boolean): Observable<Article> {
+    const params = new HttpParams().set('saved', saved);
+    return this.http.put<Article>(`${API_BASE_URL}/articles/${id}/save`, null, { params });
+  }
 }

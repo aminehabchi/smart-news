@@ -114,6 +114,9 @@
           <span class="source-badge">{{ article.source | sourceName }}</span>
         }
       </div>
+      @if (article.body) {
+        <div class="reading-time">{{ article.body | readingTime }}</div>
+      }
     </a>
   }
 </div>

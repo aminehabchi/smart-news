@@ -3,13 +3,14 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Article } from '../../models/article.model';
+import { ReadingTimePipe } from '../../pipes/reading-time-pipe';
 import { SourceNamePipe } from '../../pipes/source-name-pipe';
 import { ArticleService } from '../../services/article';
 import { SavedArticlesService } from '../../services/saved-articles';
 
 @Component({
   selector: 'app-article-detail',
-  imports: [DatePipe, RouterLink, SourceNamePipe],
+  imports: [DatePipe, RouterLink, SourceNamePipe, ReadingTimePipe],
   templateUrl: './article-detail.html',
   styleUrl: './article-detail.scss',
 })

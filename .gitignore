@@ -42,9 +42,16 @@ Thumbs.db
 # Docker
 *.pid
 
+# Dev server PIDs (backend/run.sh, frontend/run.sh)
+/pids
+
 # Data / storage volumes
 storage/data/
 storage/volumes/
+
+# topic_classifier: regenerable data/model artifacts (see training/*.py)
+topic_classifier/data/
+topic_classifier/model/
 
 # Claude
 .claude/

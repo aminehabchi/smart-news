@@ -6,48 +6,85 @@
     </button>
   </div>
   <h1>{{ a.title }}</h1>
-  <div class="meta">
-    @if (a.author.link) {
-      <a [href]="a.author.link" target="_blank" rel="noopener">{{ a.author.name }}</a>
-    } @else {
-      <span>{{ a.author.name }}</span>
-    }
-    <span>{{ a.publish_date | date: 'medium' }}</span>
-    @if (a.source) {
-      <a class="source-badge" [href]="'https://' + a.source" target="_blank" rel="noopener">{{
-        a.source | sourceName
-      }}</a>
-    }
-  </div>
-  <div class="topics">
-    @for (topic of a.topics; track topic) {
-      <span class="topic-chip">{{ topic }}</span>
-    }
-  </div>
-  @if (entityGroups().length) {
-    <div class="entities">
-      @for (group of entityGroups(); track group.label) {
-        <div class="entity-group">
-          <span class="entity-label">{{ group.label }}</span>
-          <div class="entity-chips">
-            @for (value of group.values; track value) {
-              <span class="entity-chip">{{ value }}</span>
-            }
-          </div>
-        </div>
+
+  <table class="info-table">
+    <tbody>
+      <tr>
+        <th>Author</th>
+        <td>
+          @if (a.author.link) {
+            <a [href]="a.author.link" target="_blank" rel="noopener">{{ a.author.name || '—' }}</a>
+          } @else {
+            {{ a.author.name || '—' }}
+          }
+        </td>
+      </tr>
+      <tr>
+        <th>Published</th>
+        <td>{{ (a.publish_date | date: 'medium') || '—' }}</td>
+      </tr>
+      <tr>
+        <th>Source</th>
+        <td>
+          @if (a.source) {
+            <a [href]="'https://' + a.source" target="_blank" rel="noopener">{{ a.source | sourceName }}</a>
+          } @else {
+            —
+          }
+        </td>
+      </tr>
+      <tr>
+        <th>Reading time</th>
+        <td>{{ (a.body | readingTime) || '—' }}</td>
+      </tr>
+      @if (a.predicted_topic) {
+        <tr>
+          <th>Predicted topic</th>
+          <td class="predicted-topic-value">{{ a.predicted_topic }}</td>
+        </tr>
       }
-    </div>
-  }
+      @if (a.topics.length) {
+        <tr>
+          <th>Topics</th>
+          <td>
+            <div class="chip-row">
+              @for (topic of a.topics; track topic) {
+                <span class="topic-chip">{{ topic }}</span>
+              }
+            </div>
+          </td>
+        </tr>
+      }
+      @for (group of entityGroups(); track group.label) {
+        <tr>
+          <th>{{ group.label }}</th>
+          <td>
+            <div class="chip-row">
+              @for (value of group.values; track value) {
+                <span class="entity-chip">{{ value }}</span>
+              }
+            </div>
+          </td>
+        </tr>
+      }
+      <tr>
+        <th>Original</th>
+        <td>
+          @if (a.url) {
+            <a [href]="a.url" target="_blank" rel="noopener">{{ a.url }}</a>
+          } @else {
+            —
+          }
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
   <article class="body">
     @for (paragraph of (a.body ?? '').split('\n\n'); track $index) {
       <p>{{ paragraph }}</p>
     }
   </article>
-  @if (a.url) {
-    <a class="source-link" [href]="a.url" target="_blank" rel="noopener"
-      >Read original on {{ a.source | sourceName }} &rarr;</a
-    >
-  }
 } @else {
   <p>Loading…</p>
 }

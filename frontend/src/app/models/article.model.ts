@@ -19,9 +19,11 @@ export interface Article {
   body: string | null;
   entities: Entities | null;
   topics: string[];
+  predicted_topic: string | null;
   author: Author;
   url: string | null;
   source: string | null;
+  saved: boolean;
 }
 
 export interface ArticlePage {
