@@ -165,10 +165,19 @@
   }
 
   h2 {
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.4rem;
     font-size: 1rem;
     color: var(--color-fg-default);
   }
+}
+
+.predicted-topic-badge {
+  align-self: flex-start;
+  margin-bottom: 0.6rem;
+  text-transform: capitalize;
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: var(--color-accent-fg);
 }
 
 .excerpt {

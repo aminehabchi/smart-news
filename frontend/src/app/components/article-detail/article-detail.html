@@ -1,126 +1,110 @@
 @if (article(); as a) {
-  <div class="top-row">
-    <a class="back-link" routerLink="/">&larr; Back to list</a>
+  <div class="title-row">
+    <h1>{{ a.title }}</h1>
     <button class="save-btn" [class.saved]="savedArticles.isSaved(a.id)" (click)="toggleSave()">
       {{ savedArticles.isSaved(a.id) ? '✓ Saved for later' : '+ Save for later' }}
     </button>
   </div>
-  <h1>{{ a.title }}</h1>
 
-  <table class="info-table">
-    <tbody>
-      <tr>
-        <th>Author</th>
-        <td>
-          @if (a.author.link) {
-            <a [href]="a.author.link" target="_blank" rel="noopener">{{ a.author.name || '—' }}</a>
-          } @else {
-            {{ a.author.name || '—' }}
-          }
-        </td>
-      </tr>
-      <tr>
-        <th>Published</th>
-        <td>{{ (a.publish_date | date: 'medium') || '—' }}</td>
-      </tr>
-      <tr>
-        <th>Scraped on</th>
-        <td>{{ (a.creation_date | date: 'medium') || '—' }}</td>
-      </tr>
-      <tr>
-        <th>Source</th>
-        <td>
-          @if (a.source) {
-            <a [href]="'https://' + a.source" target="_blank" rel="noopener">{{ a.source | sourceName }}</a>
-          } @else {
-            —
-          }
-        </td>
-      </tr>
-      <tr>
-        <th>Reading time</th>
-        <td>{{ (a.body | readingTime) || '—' }}</td>
-      </tr>
+  <div class="meta-strip">
+    @if (a.author.link) {
+      <a [href]="a.author.link" target="_blank" rel="noopener">{{ a.author.name || 'Unknown author' }}</a>
+    } @else {
+      <span>{{ a.author.name || 'Unknown author' }}</span>
+    }
+    <span class="meta-sep">·</span>
+    <span [title]="'Scraped ' + ((a.creation_date | date: 'medium') || 'date unknown')">
+      {{ (a.publish_date | date: 'mediumDate') || '—' }}
+    </span>
+    @if (a.source) {
+      <span class="meta-sep">·</span>
+      <a [href]="'https://' + a.source" target="_blank" rel="noopener">{{ a.source | sourceName }}</a>
+    }
+    @if (a.body) {
+      <span class="meta-sep">·</span>
+      <span>{{ a.body | readingTime }}</span>
+    }
+  </div>
+
+  @if (a.predicted_topic || sentimentSegments().length) {
+    <section class="card">
+      <h2>Analysis</h2>
       @if (a.predicted_topic) {
-        <tr>
-          <th>Predicted topic</th>
-          <td class="predicted-topic-value">{{ a.predicted_topic }}</td>
-        </tr>
+        <div class="analysis-row">
+          <span class="analysis-label">Topic</span>
+          <span class="predicted-topic-value">{{ a.predicted_topic }}</span>
+        </div>
       }
       @if (sentimentSegments().length) {
-        <tr>
-          <th>Sentiment</th>
-          <td>
-            <div class="sentiment-chart">
-              <div class="sentiment-bar">
-                @for (segment of sentimentSegments(); track segment.key) {
-                  @if (segment.width > 0) {
-                    <div
-                      class="sentiment-segment"
-                      [class]="'sentiment-' + segment.key"
-                      [style.width.%]="segment.width"
-                      [title]="segment.label + ' ' + segment.percent + '%'"
-                    ></div>
-                  }
+        <div class="analysis-row">
+          <span class="analysis-label">Sentiment</span>
+          <div class="sentiment-chart">
+            <div class="sentiment-bar">
+              @for (segment of sentimentSegments(); track segment.key) {
+                @if (segment.width > 0) {
+                  <div
+                    class="sentiment-segment"
+                    [class]="'sentiment-' + segment.key"
+                    [style.width.%]="segment.width"
+                    [title]="segment.label + ' ' + segment.percent + '%'"
+                  ></div>
                 }
-              </div>
-              <div class="sentiment-legend">
-                @for (segment of sentimentSegments(); track segment.key) {
-                  <span class="legend-item">
-                    <i class="legend-dot" [class]="'sentiment-' + segment.key"></i>
-                    {{ segment.label }} {{ segment.percent }}%
-                  </span>
-                }
-                @if (sentimentOverall()) {
-                  <span class="legend-compound">{{ sentimentOverall() }}</span>
-                }
-              </div>
-            </div>
-          </td>
-        </tr>
-      }
-      @if (a.topics.length) {
-        <tr>
-          <th>Topics</th>
-          <td>
-            <div class="chip-row">
-              @for (topic of a.topics; track topic) {
-                <span class="topic-chip">{{ topic }}</span>
               }
             </div>
-          </td>
-        </tr>
+            <div class="sentiment-legend">
+              @for (segment of sentimentSegments(); track segment.key) {
+                <span class="legend-item">
+                  <i class="legend-dot" [class]="'sentiment-' + segment.key"></i>
+                  {{ segment.label }} {{ segment.percent }}%
+                </span>
+              }
+              @if (sentimentOverall()) {
+                <span class="legend-compound">{{ sentimentOverall() }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  @if (a.topics.length || entityGroups().length) {
+    <section class="card">
+      <h2>Tags &amp; Entities</h2>
+      @if (a.topics.length) {
+        <div class="entity-group">
+          <span class="entity-group-label">Topics</span>
+          <div class="chip-row">
+            @for (topic of a.topics; track topic) {
+              <span class="topic-chip">{{ topic }}</span>
+            }
+          </div>
+        </div>
       }
       @for (group of entityGroups(); track group.label) {
-        <tr>
-          <th>{{ group.label }}</th>
-          <td>
-            <div class="chip-row">
-              @for (value of group.values; track value) {
-                <a class="entity-chip" routerLink="/" [queryParams]="filterParams(group.key, value)">{{ value }}</a>
-              }
-            </div>
-          </td>
-        </tr>
+        <div class="entity-group">
+          <span class="entity-group-label">{{ group.label }}</span>
+          <div class="chip-row">
+            @for (value of group.values; track value) {
+              <a class="entity-chip" routerLink="/" [queryParams]="filterParams(group.key, value)">{{ value }}</a>
+            }
+          </div>
+        </div>
       }
-      <tr>
-        <th>Original</th>
-        <td>
-          @if (a.url) {
-            <a [href]="a.url" target="_blank" rel="noopener">{{ a.url }}</a>
-          } @else {
-            —
-          }
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    </section>
+  }
 
   <article class="body">
     @for (paragraph of (a.body ?? '').split('\n\n'); track $index) {
       <p>{{ paragraph }}</p>
     }
   </article>
+
+  @if (a.url) {
+    <p class="original-link">
+      Original article: <a [href]="a.url" target="_blank" rel="noopener">{{ a.url }}</a>
+    </p>
+  }
 
   @if (relatedArticles().length) {
     <section class="related">

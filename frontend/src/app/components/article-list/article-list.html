@@ -116,6 +116,9 @@
   @for (article of articles(); track article.id) {
     <a class="article-card" [routerLink]="['/articles', article.id]">
       <h2>{{ article.title }}</h2>
+      @if (article.predicted_topic) {
+        <span class="predicted-topic-badge">{{ article.predicted_topic }}</span>
+      }
       <p class="excerpt">{{ article.body?.slice(0, 140) }}&hellip;</p>
       <div class="topics">
         @for (topic of article.topics; track topic) {
