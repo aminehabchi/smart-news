@@ -121,6 +121,25 @@
       <p>{{ paragraph }}</p>
     }
   </article>
+
+  @if (relatedArticles().length) {
+    <section class="related">
+      <h2>Related articles</h2>
+      <div class="related-grid">
+        @for (related of relatedArticles(); track related.id) {
+          <a class="related-card" [routerLink]="['/articles', related.id]">
+            <h3>{{ related.title }}</h3>
+            <div class="related-meta">
+              @if (related.predicted_topic) {
+                <span class="related-topic">{{ related.predicted_topic }}</span>
+              }
+              <span class="related-date">{{ related.publish_date | date: 'mediumDate' }}</span>
+            </div>
+          </a>
+        }
+      </div>
+    </section>
+  }
 } @else {
   <p>Loading…</p>
 }

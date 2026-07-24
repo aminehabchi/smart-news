@@ -139,6 +139,82 @@ def get_article(article_id: str):
     return _to_article(doc)
 
 
+def _overlap_score(field: str, source_values: list[str], weight: float) -> dict:
+    """Weight * number of values `field` shares with `source_values`."""
+    return {
+        "$multiply": [
+            weight,
+            {"$size": {"$setIntersection": [{"$ifNull": [f"${field}", []]}, source_values]}},
+        ]
+    }
+
+
+@app.get("/api/articles/{article_id}/related", response_model=list[Article])
+def get_related_articles(article_id: str, limit: int = Query(5, ge=1, le=20)):
+    try:
+        object_id = ObjectId(article_id)
+    except InvalidId:
+        logger.warning("Related-articles lookup failed: invalid id %r", article_id)
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    collection = get_collection()
+    source = collection.find_one({"_id": object_id})
+    if not source:
+        logger.warning("Related-articles lookup failed: no article with id %s", article_id)
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    source_entities = source.get("entities") or {}
+    source_topic = source.get("predicted_topic")
+    source_topics = source.get("topics") or []
+    source_persons = source_entities.get("persons") or []
+    source_organizations = source_entities.get("organizations") or []
+    source_locations = source_entities.get("locations") or []
+    source_dates_times = source_entities.get("dates_times") or []
+    source_quantities = source_entities.get("quantities_percentages") or []
+    source_compound = (source.get("sentiment") or {}).get("compound")
+
+    # Entities/topic are the substantive signal an article must share at
+    # least one of to qualify as "related" -- sentiment closeness alone
+    # (added below) is too weak/generic to justify a match by itself.
+    entity_score = {
+        "$add": [
+            {"$cond": [{"$eq": ["$predicted_topic", source_topic]}, 3, 0]},
+            _overlap_score("entities.persons", source_persons, 2),
+            _overlap_score("entities.organizations", source_organizations, 2),
+            _overlap_score("entities.locations", source_locations, 1.5),
+            _overlap_score("topics", source_topics, 1),
+            _overlap_score("entities.dates_times", source_dates_times, 0.5),
+            _overlap_score("entities.quantities_percentages", source_quantities, 0.5),
+        ]
+    }
+
+    sentiment_bonus = 0
+    if source_compound is not None:
+        sentiment_bonus = {
+            "$multiply": [
+                0.5,
+                {
+                    "$subtract": [
+                        1,
+                        {"$divide": [{"$abs": {"$subtract": ["$sentiment.compound", source_compound]}}, 2]},
+                    ]
+                },
+            ]
+        }
+
+    pipeline = [
+        {"$match": {"_id": {"$ne": object_id}}},
+        {"$addFields": {"_entity_score": entity_score}},
+        {"$match": {"_entity_score": {"$gt": 0}}},
+        {"$addFields": {"_score": {"$add": ["$_entity_score", sentiment_bonus]}}},
+        {"$sort": {"_score": -1, "creation_date": -1}},
+        {"$limit": limit},
+    ]
+
+    docs = collection.aggregate(pipeline)
+    return [_to_article(doc) for doc in docs]
+
+
 @app.put("/api/articles/{article_id}/save", response_model=Article)
 def set_article_saved(article_id: str, saved: bool = Query(...)):
     try:

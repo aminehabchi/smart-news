@@ -2,10 +2,12 @@
 
 A full-stack pipeline that scrapes tech news (TechCrunch, The Verge, Ars
 Technica), cleans and analyzes it with NLP — named entity recognition
-(persons, organizations, locations, dates/times, quantities) and automatic
-topic classification (business/entertainment/politics/sport/tech) — stores
-the results in MongoDB, and serves them through a REST API and an Angular UI
-with full-text search, entity/topic filtering, and save-for-later.
+(persons, organizations, locations, dates/times, quantities), automatic
+topic classification (business/entertainment/politics/sport/tech), and
+sentiment analysis (VADER) — stores the results in MongoDB, and serves them
+through a REST API and an Angular UI with full-text search, entity/topic/
+sentiment filtering, related-article suggestions, a stats dashboard, and
+save-for-later.
 
 ## Tech stack
 
@@ -22,9 +24,9 @@ with full-text search, entity/topic filtering, and save-for-later.
 ## Architecture
 
 - `storage/` — MongoDB, run via Docker Compose.
-- `pipeline/` — Playwright scrapers + text cleaning (tokenize, stopword removal, stemming) + NER (spaCy) + topic classification (TF-IDF + LogisticRegression, `pipeline/topic_classifier/`, trained on the BBC News dataset). Own venv, shared by all of the above.
-- `backend/` — FastAPI REST API over the stored articles (search, filters, save-for-later). Also runs the scraping pipeline on an hourly schedule. Own venv.
-- `frontend/` — Angular UI: browse/search/filter articles, view extracted entities and predicted topic, save articles for later.
+- `pipeline/` — Playwright scrapers + text cleaning (tokenize, stopword removal, stemming) + NER (spaCy) + sentiment analysis (NLTK VADER) + topic classification (TF-IDF + LogisticRegression, `pipeline/topic_classifier/`, trained on the BBC News dataset). Own venv, shared by all of the above.
+- `backend/` — FastAPI REST API over the stored articles (search, filters, related-article suggestions, aggregate stats, save-for-later). Also runs the scraping pipeline on an hourly schedule. Own venv.
+- `frontend/` — Angular UI: browse/search/filter articles (including by sentiment), view extracted entities/predicted topic/sentiment breakdown, jump to related articles, a stats dashboard, and save articles for later.
 
 Each directory has its own `README.md` with structure/endpoint details.
 
@@ -69,11 +71,12 @@ Optional, but do this before step 4 so newly scraped articles get a
 ./pipeline/topic_classifier/run.sh   # trains the model on the bundled BBC News dataset
 ```
 
-### 4. Scrape + clean + extract entities + classify topics
+### 4. Scrape + clean + extract entities + score sentiment + classify topics
 
 ```bash
-./pipeline/run.sh   # scrapes latest articles, cleans text, runs NER and topic
-                     # classification on them, stores the result in MongoDB
+./pipeline/run.sh   # scrapes latest articles, cleans text, runs NER, sentiment
+                     # analysis, and topic classification on them, stores the
+                     # result in MongoDB
 ```
 
 If you skipped step 3, or want to (re-)process articles stored before the
@@ -81,7 +84,7 @@ classifier was trained, these self-tracking backfill scripts only touch
 articles missing the relevant field:
 
 ```bash
-./pipeline/nlp_engine/run.sh             # backfill NER
+./pipeline/nlp_engine/run.sh             # backfill NER + sentiment
 ./pipeline/topic_classifier/classify.sh  # backfill topic classification
 ```
 

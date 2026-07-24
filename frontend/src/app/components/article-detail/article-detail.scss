@@ -220,3 +220,63 @@ h1 {
   color: var(--color-fg-default);
   margin: 0 0 1.4rem;
 }
+
+.related {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border-muted);
+}
+
+.related h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.related-card {
+  display: block;
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  padding: 0.9rem;
+  text-decoration: none;
+  color: inherit;
+  background: var(--color-canvas-default);
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--color-accent-emphasis);
+
+    h3 {
+      color: var(--color-accent-fg);
+    }
+  }
+
+  h3 {
+    margin: 0 0 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-fg-default);
+    line-height: 1.35;
+  }
+}
+
+.related-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--color-fg-muted);
+}
+
+.related-topic {
+  text-transform: capitalize;
+  font-weight: 600;
+  color: var(--color-accent-fg);
+}

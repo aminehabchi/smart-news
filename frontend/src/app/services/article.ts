@@ -54,6 +54,10 @@ export class ArticleService {
     return this.http.get<Article>(`${API_BASE_URL}/articles/${id}`);
   }
 
+  getRelated(id: string): Observable<Article[]> {
+    return this.http.get<Article[]>(`${API_BASE_URL}/articles/${id}/related`);
+  }
+
   listSources(): Observable<string[]> {
     return this.http.get<string[]>(`${API_BASE_URL}/sources`);
   }

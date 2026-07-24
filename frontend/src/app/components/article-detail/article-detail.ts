@@ -20,6 +20,7 @@ export class ArticleDetail implements OnInit {
   readonly savedArticles = inject(SavedArticlesService);
 
   readonly article = signal<Article | null>(null);
+  readonly relatedArticles = signal<Article[]>([]);
 
   readonly entityGroups = computed(() => {
     const entities = this.article()?.entities;
@@ -63,10 +64,16 @@ export class ArticleDetail implements OnInit {
   });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (!id) {
+        return;
+      }
+      this.article.set(null);
+      this.relatedArticles.set([]);
       this.articleService.get(id).subscribe((article) => this.article.set(article));
-    }
+      this.articleService.getRelated(id).subscribe((articles) => this.relatedArticles.set(articles));
+    });
   }
 
   filterParams(key: keyof ArticleListFilters, value: string): ArticleListFilters {
