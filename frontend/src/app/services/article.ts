@@ -8,6 +8,7 @@ import { Article, ArticlePage } from '../models/article.model';
 export interface ArticleListFilters {
   q?: string;
   source?: string;
+  sentiment?: 'positive' | 'neutral' | 'negative';
   title?: string;
   body?: string;
   persons?: string;
@@ -21,6 +22,7 @@ export interface ArticleListFilters {
 const FILTER_KEYS: (keyof ArticleListFilters)[] = [
   'q',
   'source',
+  'sentiment',
   'title',
   'body',
   'persons',

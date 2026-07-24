@@ -30,6 +30,19 @@ class Entities(BaseModel):
     quantities_percentages: list[str] = []
 
 
+class Sentiment(BaseModel):
+    """VADER polarity scores for an article's body (see nlp_engine/sentiment.py:analyze_sentiment).
+
+    neg/neu/pos are proportions of the text (sum to ~1.0); compound is a
+    single normalized score from -1 (most negative) to +1 (most positive).
+    """
+
+    neg: float = 0.0
+    neu: float = 0.0
+    pos: float = 0.0
+    compound: float = 0.0
+
+
 class Article(BaseModel):
     id: str | None = None
     creation_date: str | None = None
@@ -39,6 +52,7 @@ class Article(BaseModel):
     clean_text: str | None = None
     preprocessing: Preprocessing | None = None
     entities: Entities | None = None
+    sentiment: Sentiment | None = None
     topics: list[str] = []
     # Single predicted category (business/entertainment/politics/sport/tech),
     # see pipeline/topic_classifier/orchestrator.py. Distinct from `topics` above,

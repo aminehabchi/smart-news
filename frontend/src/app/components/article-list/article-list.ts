@@ -3,7 +3,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Article } from '../../models/article.model';
-import { ReadingTimePipe } from '../../pipes/reading-time-pipe';
 import { SourceNamePipe } from '../../pipes/source-name-pipe';
 import { ArticleListFilters, ArticleService } from '../../services/article';
 
@@ -19,7 +18,7 @@ const ADVANCED_FILTER_KEYS: (keyof ArticleListFilters)[] = [
 
 @Component({
   selector: 'app-article-list',
-  imports: [RouterLink, DatePipe, SourceNamePipe, ReadingTimePipe],
+  imports: [RouterLink, DatePipe, SourceNamePipe],
   templateUrl: './article-list.html',
   styleUrl: './article-list.scss',
 })
@@ -36,6 +35,7 @@ export class ArticleList implements OnInit {
   readonly loading = signal(false);
   readonly query = signal('');
   readonly source = signal('');
+  readonly sentiment = signal<'positive' | 'neutral' | 'negative' | ''>('');
   readonly sources = signal<string[]>([]);
   readonly showAdvanced = signal(false);
   readonly advancedFilters = signal<ArticleListFilters>({});
@@ -47,6 +47,12 @@ export class ArticleList implements OnInit {
     this.route.queryParamMap.subscribe((params) => {
       this.query.set(params.get('q') ?? '');
       this.source.set(params.get('source') ?? '');
+      const sentimentParam = params.get('sentiment');
+      this.sentiment.set(
+        sentimentParam === 'positive' || sentimentParam === 'neutral' || sentimentParam === 'negative'
+          ? sentimentParam
+          : '',
+      );
       this.order.set(params.get('order') === 'oldest' ? 'oldest' : 'newest');
 
       const advanced: Record<string, string> = {};
@@ -57,7 +63,7 @@ export class ArticleList implements OnInit {
         }
       }
       this.advancedFilters.set(advanced as ArticleListFilters);
-      if (Object.keys(advanced).length > 0) {
+      if (Object.keys(advanced).length > 0 || sentimentParam) {
         this.showAdvanced.set(true);
       }
 
@@ -73,6 +79,7 @@ export class ArticleList implements OnInit {
       .list(this.page(), this.pageSize, {
         q: this.query(),
         source: this.source(),
+        sentiment: this.sentiment() || undefined,
         order: this.order(),
         ...this.advancedFilters(),
       })
@@ -111,6 +118,7 @@ export class ArticleList implements OnInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
+        sentiment: filters.sentiment || null,
         title: filters.title?.trim() || null,
         body: filters.body?.trim() || null,
         persons: filters.persons?.trim() || null,
@@ -136,6 +144,7 @@ export class ArticleList implements OnInit {
     locations: string,
     datesTimes: string,
     quantitiesPercentages: string,
+    sentiment: string,
   ): void {
     this.applyAdvancedFilters({
       title,
@@ -145,6 +154,7 @@ export class ArticleList implements OnInit {
       locations,
       dates_times: datesTimes,
       quantities_percentages: quantitiesPercentages,
+      sentiment: sentiment === 'positive' || sentiment === 'neutral' || sentiment === 'negative' ? sentiment : undefined,
     });
   }
 

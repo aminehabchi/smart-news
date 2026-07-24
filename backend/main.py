@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pymongo import ReturnDocument
 
 from db import ensure_indexes, get_collection
-from models import Article, ArticlePage
+from models import Article, ArticlePage, CountItem, EntityCount, Stats
 from scheduler import start_scheduler
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -70,6 +70,7 @@ def list_articles(
     locations: str | None = Query(None, min_length=1),
     dates_times: str | None = Query(None, min_length=1),
     quantities_percentages: str | None = Query(None, min_length=1),
+    sentiment: str | None = Query(None, pattern="^(positive|neutral|negative)$"),
     order: str = Query("newest", pattern="^(newest|oldest)$"),
 ):
     collection = get_collection()
@@ -92,6 +93,12 @@ def list_articles(
         query["entities.dates_times"] = _contains(dates_times)
     if quantities_percentages:
         query["entities.quantities_percentages"] = _contains(quantities_percentages)
+    if sentiment == "positive":
+        query["sentiment.compound"] = {"$gte": 0.05}
+    elif sentiment == "negative":
+        query["sentiment.compound"] = {"$lte": -0.05}
+    elif sentiment == "neutral":
+        query["sentiment.compound"] = {"$gt": -0.05, "$lt": 0.05}
 
     total = collection.count_documents(query)
     skip = (page - 1) * page_size
@@ -157,3 +164,46 @@ def set_article_saved(article_id: str, saved: bool = Query(...)):
 def list_saved():
     cursor = get_collection().find({"saved": True}).sort("creation_date", -1)
     return [_to_article(doc) for doc in cursor]
+
+
+def _group_counts(collection, field: str) -> list[CountItem]:
+    pipeline = [
+        {"$match": {field: {"$exists": True, "$ne": None}}},
+        {"$group": {"_id": f"${field}", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+    ]
+    return [CountItem(label=str(doc["_id"]), count=doc["count"]) for doc in collection.aggregate(pipeline)]
+
+
+def _top_entities(collection, field: str, limit: int = 10) -> list[EntityCount]:
+    pipeline = [
+        {"$unwind": f"${field}"},
+        {"$group": {"_id": f"${field}", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": limit},
+    ]
+    return [EntityCount(value=doc["_id"], count=doc["count"]) for doc in collection.aggregate(pipeline)]
+
+
+@app.get("/api/stats", response_model=Stats)
+def get_stats():
+    collection = get_collection()
+
+    sentiment_counts = [
+        CountItem(label="positive", count=collection.count_documents({"sentiment.compound": {"$gte": 0.05}})),
+        CountItem(
+            label="neutral",
+            count=collection.count_documents({"sentiment.compound": {"$gt": -0.05, "$lt": 0.05}}),
+        ),
+        CountItem(label="negative", count=collection.count_documents({"sentiment.compound": {"$lte": -0.05}})),
+    ]
+
+    return Stats(
+        total_articles=collection.count_documents({}),
+        topics=_group_counts(collection, "predicted_topic"),
+        sources=_group_counts(collection, "source"),
+        sentiment=sentiment_counts,
+        top_persons=_top_entities(collection, "entities.persons"),
+        top_organizations=_top_entities(collection, "entities.organizations"),
+        top_locations=_top_entities(collection, "entities.locations"),
+    )

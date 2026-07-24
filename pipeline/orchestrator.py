@@ -1,10 +1,13 @@
 """Entry point: scrape the latest articles from all sources, clean them, run
-NER and topic classification on them, and store them in MongoDB.
+NER, sentiment analysis, and topic classification on them, and store them in
+MongoDB.
 
-NER and topic classification also run separately over historical articles
-via pipeline/nlp_engine/orchestrator.py and topic_classifier/orchestrator.py
-(self-tracking backfill scripts) -- this module runs the same steps inline
-so freshly scraped articles are fully processed in one pass.
+NER, sentiment analysis, and topic classification also run separately over
+historical articles via pipeline/nlp_engine/orchestrator.py,
+pipeline/nlp_engine/sentiment_orchestrator.py, and
+topic_classifier/orchestrator.py (self-tracking backfill scripts) -- this
+module runs the same steps inline so freshly scraped articles are fully
+processed in one pass.
 """
 
 import logging
@@ -17,6 +20,7 @@ from dotenv import load_dotenv
 from db import insert_articles, insert_word_frequencies
 from model import Article
 from nlp_engine.ner import extract_entities
+from nlp_engine.sentiment import analyze_sentiment
 from scrapers import arstechnica, techcrunch, theverge
 from text_preprocessing.bow import fit_corpus_vectorizer, tokens_to_ids, word_frequencies
 from text_preprocessing.preprocessing import clean_article
@@ -60,6 +64,7 @@ def main() -> None:
 
         for article in articles:
             article.entities = extract_entities(article)
+            article.sentiment = analyze_sentiment(article)
             if topic_vectorizer is not None:
                 article.predicted_topic = predict_topic(article, topic_vectorizer, topic_model)
 

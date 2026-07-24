@@ -41,6 +41,27 @@ export class ArticleDetail implements OnInit {
     ).filter((group) => group.values.length > 0);
   });
 
+  readonly sentimentSegments = computed(() => {
+    const sentiment = this.article()?.sentiment;
+    if (!sentiment) {
+      return [];
+    }
+    return [
+      { key: 'neg', label: 'Negative', width: sentiment.neg * 100, percent: Math.round(sentiment.neg * 100) },
+      { key: 'neu', label: 'Neutral', width: sentiment.neu * 100, percent: Math.round(sentiment.neu * 100) },
+      { key: 'pos', label: 'Positive', width: sentiment.pos * 100, percent: Math.round(sentiment.pos * 100) },
+    ];
+  });
+
+  readonly sentimentOverall = computed(() => {
+    const compound = this.article()?.sentiment?.compound;
+    if (compound === undefined) {
+      return null;
+    }
+    const label = compound >= 0.05 ? 'Positive' : compound <= -0.05 ? 'Negative' : 'Neutral';
+    return `${label} (compound ${compound.toFixed(2)})`;
+  });
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {

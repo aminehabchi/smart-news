@@ -11,6 +11,13 @@ export interface Entities {
   quantities_percentages: string[];
 }
 
+export interface Sentiment {
+  neg: number;
+  neu: number;
+  pos: number;
+  compound: number;
+}
+
 export interface Article {
   id: string;
   creation_date: string | null;
@@ -18,6 +25,7 @@ export interface Article {
   title: string | null;
   body: string | null;
   entities: Entities | null;
+  sentiment: Sentiment | null;
   topics: string[];
   predicted_topic: string | null;
   author: Author;

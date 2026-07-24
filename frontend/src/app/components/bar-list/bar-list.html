@@ -1,0 +1,15 @@
+@if (items().length === 0) {
+  <p class="empty">No data yet.</p>
+} @else {
+  <div class="bar-list">
+    @for (item of items(); track item.label) {
+      <div class="bar-row" [title]="item.label + ': ' + item.count">
+        <span class="bar-label">{{ item.label }}</span>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="(item.count / maxCount()) * 100"></div>
+        </div>
+        <span class="bar-count">{{ item.count }}</span>
+      </div>
+    }
+  </div>
+}

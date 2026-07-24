@@ -35,10 +35,20 @@
           organizationsInput.value,
           locationsInput.value,
           datesTimesInput.value,
-          quantitiesInput.value
+          quantitiesInput.value,
+          sentimentInput.value
         )
       "
     >
+      <label>
+        Sentiment
+        <select #sentimentInput [value]="sentiment()">
+          <option value="">Any</option>
+          <option value="positive">Positive</option>
+          <option value="neutral">Neutral</option>
+          <option value="negative">Negative</option>
+        </select>
+      </label>
       <label>
         Title
         <input #titleInput type="text" [value]="advancedFilters().title ?? ''" placeholder="Search in title…" />
@@ -115,13 +125,7 @@
       <div class="meta">
         <span class="author">{{ article.author.name }}</span>
         <span class="date">{{ article.publish_date | date: 'mediumDate' }}</span>
-        @if (article.source) {
-          <span class="source-badge">{{ article.source | sourceName }}</span>
-        }
       </div>
-      @if (article.body) {
-        <div class="reading-time">{{ article.body | readingTime }}</div>
-      }
     </a>
   }
 </div>

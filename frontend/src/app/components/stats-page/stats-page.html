@@ -1,0 +1,70 @@
+<h1>Statistics</h1>
+
+@if (loading()) {
+  <p>Loading…</p>
+} @else if (!stats()) {
+  <p>Couldn't load statistics.</p>
+} @else {
+  <div class="stat-tile">
+    <span class="stat-tile-value">{{ stats()!.total_articles }}</span>
+    <span class="stat-tile-label">Total articles</span>
+  </div>
+
+  <div class="panel-grid">
+    <section class="panel">
+      <h2>Articles by topic</h2>
+      <app-bar-list [items]="topicItems()" />
+    </section>
+
+    <section class="panel">
+      <h2>Articles by source</h2>
+      <app-bar-list [items]="sourceItems()" />
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Sentiment breakdown</h2>
+    @if (sentimentSegments().length) {
+      <div class="sentiment-chart">
+        <div class="sentiment-bar">
+          @for (segment of sentimentSegments(); track segment.key) {
+            @if (segment.width > 0) {
+              <div
+                class="sentiment-segment"
+                [class]="'sentiment-' + segment.key"
+                [style.width.%]="segment.width"
+                [title]="segment.label + ': ' + segment.count + ' (' + segment.percent + '%)'"
+              ></div>
+            }
+          }
+        </div>
+        <div class="sentiment-legend">
+          @for (segment of sentimentSegments(); track segment.key) {
+            <span class="legend-item">
+              <i class="legend-dot" [class]="'sentiment-' + segment.key"></i>
+              {{ segment.label }} {{ segment.count }} ({{ segment.percent }}%)
+            </span>
+          }
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <h2>Top entities</h2>
+    <div class="panel-grid panel-grid-3">
+      <div>
+        <h3>Persons</h3>
+        <app-bar-list [items]="personItems()" />
+      </div>
+      <div>
+        <h3>Organizations</h3>
+        <app-bar-list [items]="organizationItems()" />
+      </div>
+      <div>
+        <h3>Locations</h3>
+        <app-bar-list [items]="locationItems()" />
+      </div>
+    </div>
+  </section>
+}

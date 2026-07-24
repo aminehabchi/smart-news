@@ -47,6 +47,38 @@
           <td class="predicted-topic-value">{{ a.predicted_topic }}</td>
         </tr>
       }
+      @if (sentimentSegments().length) {
+        <tr>
+          <th>Sentiment</th>
+          <td>
+            <div class="sentiment-chart">
+              <div class="sentiment-bar">
+                @for (segment of sentimentSegments(); track segment.key) {
+                  @if (segment.width > 0) {
+                    <div
+                      class="sentiment-segment"
+                      [class]="'sentiment-' + segment.key"
+                      [style.width.%]="segment.width"
+                      [title]="segment.label + ' ' + segment.percent + '%'"
+                    ></div>
+                  }
+                }
+              </div>
+              <div class="sentiment-legend">
+                @for (segment of sentimentSegments(); track segment.key) {
+                  <span class="legend-item">
+                    <i class="legend-dot" [class]="'sentiment-' + segment.key"></i>
+                    {{ segment.label }} {{ segment.percent }}%
+                  </span>
+                }
+                @if (sentimentOverall()) {
+                  <span class="legend-compound">{{ sentimentOverall() }}</span>
+                }
+              </div>
+            </div>
+          </td>
+        </tr>
+      }
       @if (a.topics.length) {
         <tr>
           <th>Topics</th>
