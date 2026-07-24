@@ -1,13 +1,22 @@
-"""Entry point: scrape the latest articles from all sources, clean them, and store them in MongoDB."""
+"""Entry point: scrape the latest articles from all sources, clean them, run
+NER and topic classification on them, and store them in MongoDB.
+
+NER and topic classification also run separately over historical articles
+via pipeline/nlp_engine/orchestrator.py and topic_classifier/orchestrator.py
+(self-tracking backfill scripts) -- this module runs the same steps inline
+so freshly scraped articles are fully processed in one pass.
+"""
 
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
+import joblib
 from dotenv import load_dotenv
 
 from db import insert_articles, insert_word_frequencies
 from model import Article
+from nlp_engine.ner import extract_entities
 from scrapers import arstechnica, techcrunch, theverge
 from text_preprocessing.bow import fit_corpus_vectorizer, tokens_to_ids, word_frequencies
 from text_preprocessing.preprocessing import clean_article
@@ -18,8 +27,25 @@ logger = logging.getLogger("orchestrator")
 
 SCRAPERS = [techcrunch, theverge, arstechnica]
 
+TOPIC_MODEL_PATH = Path(__file__).resolve().parent / "topic_classifier" / "model" / "topic_classifier.pkl"
+
+
+def predict_topic(article: Article, vectorizer, model) -> str | None:
+    tokens = article.preprocessing.stemmed_tokens if article.preprocessing else []
+    if not tokens:
+        return None
+    features = vectorizer.transform([" ".join(tokens)])
+    return str(model.predict(features)[0])
+
 
 def main() -> None:
+    topic_vectorizer = topic_model = None
+    if TOPIC_MODEL_PATH.exists():
+        saved = joblib.load(TOPIC_MODEL_PATH)
+        topic_vectorizer, topic_model = saved["vectorizer"], saved["model"]
+    else:
+        logger.warning("No trained topic classifier at %s, skipping topic prediction.", TOPIC_MODEL_PATH)
+
     total = 0
     batches: list[tuple[str, list[Article]]] = []
     all_articles: list[Article] = []
@@ -31,6 +57,11 @@ def main() -> None:
         except Exception:
             logger.error("%s: scraping failed, skipping this source.", scraper.SOURCE, exc_info=True)
             continue
+
+        for article in articles:
+            article.entities = extract_entities(article)
+            if topic_vectorizer is not None:
+                article.predicted_topic = predict_topic(article, topic_vectorizer, topic_model)
 
         batches.append((scraper.SOURCE, articles))
         all_articles.extend(articles)

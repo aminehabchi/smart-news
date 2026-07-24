@@ -10,8 +10,7 @@ with full-text search, entity/topic filtering, and save-for-later.
 ## Architecture
 
 - `storage/` — MongoDB, run via Docker Compose.
-- `pipeline/` — Playwright scrapers + text cleaning (tokenize, stopword removal, stemming) + NER (spaCy). Own venv.
-- `topic_classifier/` — standalone TF-IDF + LogisticRegression classifier (trained on the BBC News dataset) that predicts each article's topic. Own venv.
+- `pipeline/` — Playwright scrapers + text cleaning (tokenize, stopword removal, stemming) + NER (spaCy) + topic classification (TF-IDF + LogisticRegression, `pipeline/topic_classifier/`, trained on the BBC News dataset). Own venv, shared by all of the above.
 - `backend/` — FastAPI REST API over the stored articles (search, filters, save-for-later). Also runs the scraping pipeline on an hourly schedule. Own venv.
 - `frontend/` — Angular UI: browse/search/filter articles, view extracted entities and predicted topic, save articles for later.
 
@@ -28,6 +27,12 @@ Each directory has its own `README.md` with structure/endpoint details.
 Run these in order — later components depend on earlier ones being up and,
 for the pipeline/classifier, having already populated data.
 
+Steps 3–6 each install their component's dependencies via its own
+`setup.sh`. To install all of them in one go, run `./setup.sh` from the repo
+root (it just calls `pipeline/setup.sh`, `pipeline/topic_classifier/setup.sh`,
+`backend/setup.sh`, and `frontend/setup.sh` in order) — then skip straight to
+each component's `run.sh`/`classify.sh` below.
+
 ### 1. Configure environment
 
 ```bash
@@ -41,22 +46,31 @@ cp .env.example .env
 cd storage && docker compose --env-file ../.env up -d && cd ..
 ```
 
-### 3. Scrape + clean + extract entities
+### 3. Train the topic classifier
+
+Optional, but do this before step 4 so newly scraped articles get a
+`predicted_topic` immediately instead of needing a backfill run later.
 
 ```bash
 ./pipeline/setup.sh
-./pipeline/run.sh              # scrapes latest articles, cleans text, stores in MongoDB
-./pipeline/nlp_engine/run.sh   # runs NER over stored articles
+./pipeline/topic_classifier/setup.sh
+./pipeline/topic_classifier/run.sh   # trains the model on the bundled BBC News dataset
 ```
 
-### 4. Classify article topics
-
-Optional, but pairs with the NER step above.
+### 4. Scrape + clean + extract entities + classify topics
 
 ```bash
-./topic_classifier/setup.sh
-./topic_classifier/run.sh      # trains the model on the bundled BBC News dataset
-./topic_classifier/classify.sh # predicts a topic for every stored article
+./pipeline/run.sh   # scrapes latest articles, cleans text, runs NER and topic
+                     # classification on them, stores the result in MongoDB
+```
+
+If you skipped step 3, or want to (re-)process articles stored before the
+classifier was trained, these self-tracking backfill scripts only touch
+articles missing the relevant field:
+
+```bash
+./pipeline/nlp_engine/run.sh             # backfill NER
+./pipeline/topic_classifier/classify.sh  # backfill topic classification
 ```
 
 ### 5. Start the backend API

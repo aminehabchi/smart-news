@@ -1,4 +1,4 @@
-"""Schedules the hourly pipeline run (scrape + store) from within the API process."""
+"""Schedules the hourly pipeline run (scrape + clean + NER + topic classification) from within the API process."""
 
 import logging
 import subprocess

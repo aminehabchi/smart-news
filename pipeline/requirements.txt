@@ -5,3 +5,5 @@ pydantic
 nltk
 scikit-learn
 spacy
+joblib
+matplotlib

@@ -1,7 +1,8 @@
 """Entry point: predict each article's topic category using the trained
 classifier (model/topic_classifier.pkl) and store it as `predicted_topic`.
 
-Run separately from the training scripts (training/); self-tracking via the
+This is a backfill script for articles that predate/missed inline topic
+prediction in pipeline/orchestrator.py; self-tracking via the
 `predicted_topic` field, so each run only picks up articles no prior run has
 classified yet -- same pattern as pipeline/nlp_engine/orchestrator.py (NER).
 
@@ -23,16 +24,19 @@ import joblib  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
 
 TOPIC_CLASSIFIER_DIR = Path(__file__).resolve().parent
+PIPELINE_DIR = TOPIC_CLASSIFIER_DIR.parent
 MODEL_PATH = TOPIC_CLASSIFIER_DIR / "model" / "topic_classifier.pkl"
 
-# topic_classifier lives outside pipeline/, but reuses its Mongo access and
-# Article model rather than duplicating them.
-sys.path.insert(0, str(TOPIC_CLASSIFIER_DIR.parent / "pipeline"))
+# topic_classifier lives inside pipeline/ and shares its venv, but this
+# script is run with topic_classifier/ as the cwd (see classify.sh), so
+# pipeline/ still needs to be added to sys.path to reuse its Mongo access
+# and Article model rather than duplicating them.
+sys.path.insert(0, str(PIPELINE_DIR))
 
 from db import get_collection  # noqa: E402
 from model import Article  # noqa: E402
 
-load_dotenv(TOPIC_CLASSIFIER_DIR.parent / ".env")
+load_dotenv(PIPELINE_DIR.parent / ".env")
 
 
 def main() -> None:

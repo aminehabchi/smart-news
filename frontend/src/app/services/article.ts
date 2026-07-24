@@ -15,6 +15,7 @@ export interface ArticleListFilters {
   locations?: string;
   dates_times?: string;
   quantities_percentages?: string;
+  order?: 'newest' | 'oldest';
 }
 
 const FILTER_KEYS: (keyof ArticleListFilters)[] = [
@@ -27,6 +28,7 @@ const FILTER_KEYS: (keyof ArticleListFilters)[] = [
   'locations',
   'dates_times',
   'quantities_percentages',
+  'order',
 ];
 
 @Injectable({

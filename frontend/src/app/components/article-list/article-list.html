@@ -14,9 +14,14 @@
 </div>
 
 <div class="advanced-filters">
-  <button type="button" class="advanced-toggle" (click)="toggleAdvanced()">
-    {{ showAdvanced() ? '▾' : '▸' }} Advanced filters
-  </button>
+  <div class="advanced-filters-header">
+    <button type="button" class="advanced-toggle" (click)="toggleAdvanced()">
+      {{ showAdvanced() ? '▾' : '▸' }} Advanced filters
+    </button>
+    <button type="button" class="order-toggle" (click)="toggleOrder()">
+      {{ order() === 'newest' ? '↓ Newest first' : '↑ Oldest first' }}
+    </button>
+  </div>
 
   @if (showAdvanced()) {
     <form

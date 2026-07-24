@@ -24,6 +24,10 @@
         <td>{{ (a.publish_date | date: 'medium') || '—' }}</td>
       </tr>
       <tr>
+        <th>Scraped on</th>
+        <td>{{ (a.creation_date | date: 'medium') || '—' }}</td>
+      </tr>
+      <tr>
         <th>Source</th>
         <td>
           @if (a.source) {
@@ -61,7 +65,7 @@
           <td>
             <div class="chip-row">
               @for (value of group.values; track value) {
-                <span class="entity-chip">{{ value }}</span>
+                <a class="entity-chip" routerLink="/" [queryParams]="filterParams(group.key, value)">{{ value }}</a>
               }
             </div>
           </td>

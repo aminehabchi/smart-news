@@ -17,10 +17,10 @@ logger = logging.getLogger("topic_classifier.prepare_data")
 TOPIC_CLASSIFIER_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = TOPIC_CLASSIFIER_DIR / "data"
 
-# topic_classifier lives outside pipeline/, but reuses its article cleaning
-# code rather than duplicating it -- so pipeline/ is added to the import
-# path explicitly instead of relying on cwd (as pipeline's own scripts do).
-sys.path.insert(0, str(TOPIC_CLASSIFIER_DIR.parent / "pipeline"))
+# This script runs with cwd=topic_classifier/ (see run.sh), so pipeline/ --
+# its parent, holding the article cleaning code this reuses rather than
+# duplicating -- needs to be added to the import path explicitly.
+sys.path.insert(0, str(TOPIC_CLASSIFIER_DIR.parent))
 
 from text_preprocessing.preprocessing import clean_text, preprocess_text  # noqa: E402
 

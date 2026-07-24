@@ -39,6 +39,7 @@ export class ArticleList implements OnInit {
   readonly sources = signal<string[]>([]);
   readonly showAdvanced = signal(false);
   readonly advancedFilters = signal<ArticleListFilters>({});
+  readonly order = signal<'newest' | 'oldest'>('newest');
 
   ngOnInit(): void {
     this.articleService.listSources().subscribe((sources) => this.sources.set(sources));
@@ -46,20 +47,22 @@ export class ArticleList implements OnInit {
     this.route.queryParamMap.subscribe((params) => {
       this.query.set(params.get('q') ?? '');
       this.source.set(params.get('source') ?? '');
+      this.order.set(params.get('order') === 'oldest' ? 'oldest' : 'newest');
 
-      const advanced: ArticleListFilters = {};
+      const advanced: Record<string, string> = {};
       for (const key of ADVANCED_FILTER_KEYS) {
         const value = params.get(key);
         if (value) {
           advanced[key] = value;
         }
       }
-      this.advancedFilters.set(advanced);
+      this.advancedFilters.set(advanced as ArticleListFilters);
       if (Object.keys(advanced).length > 0) {
         this.showAdvanced.set(true);
       }
 
-      this.page.set(1);
+      const pageParam = Number(params.get('page'));
+      this.page.set(pageParam > 0 ? pageParam : 1);
       this.load();
     });
   }
@@ -70,6 +73,7 @@ export class ArticleList implements OnInit {
       .list(this.page(), this.pageSize, {
         q: this.query(),
         source: this.source(),
+        order: this.order(),
         ...this.advancedFilters(),
       })
       .subscribe({
@@ -85,13 +89,22 @@ export class ArticleList implements OnInit {
   filterBySource(source: string): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { source: source || null },
+      queryParams: { source: source || null, page: null },
       queryParamsHandling: 'merge',
     });
   }
 
   toggleAdvanced(): void {
     this.showAdvanced.update((value) => !value);
+  }
+
+  toggleOrder(): void {
+    const next = this.order() === 'newest' ? 'oldest' : 'newest';
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { order: next === 'newest' ? null : next, page: null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   applyAdvancedFilters(filters: ArticleListFilters): void {
@@ -105,6 +118,7 @@ export class ArticleList implements OnInit {
         locations: filters.locations?.trim() || null,
         dates_times: filters.dates_times?.trim() || null,
         quantities_percentages: filters.quantities_percentages?.trim() || null,
+        page: null,
       },
       queryParamsHandling: 'merge',
     });
@@ -138,7 +152,10 @@ export class ArticleList implements OnInit {
     if (page < 1 || page > this.totalPages()) {
       return;
     }
-    this.page.set(page);
-    this.load();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: page === 1 ? null : page },
+      queryParamsHandling: 'merge',
+    });
   }
 }

@@ -34,7 +34,7 @@ export class Header {
 
   search(term: string): void {
     this.router.navigate(['/'], {
-      queryParams: { q: term.trim() || null },
+      queryParams: { q: term.trim() || null, page: null },
       queryParamsHandling: 'merge',
     });
   }

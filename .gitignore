@@ -49,9 +49,8 @@ Thumbs.db
 storage/data/
 storage/volumes/
 
-# topic_classifier: regenerable data/model artifacts (see training/*.py)
-topic_classifier/data/
-topic_classifier/model/
+# topic_classifier: regenerable training data (see training/*.py)
+pipeline/topic_classifier/data/
 
 # Claude
 .claude/

@@ -70,6 +70,7 @@ def list_articles(
     locations: str | None = Query(None, min_length=1),
     dates_times: str | None = Query(None, min_length=1),
     quantities_percentages: str | None = Query(None, min_length=1),
+    order: str = Query("newest", pattern="^(newest|oldest)$"),
 ):
     collection = get_collection()
     query: dict = {}
@@ -95,9 +96,10 @@ def list_articles(
     total = collection.count_documents(query)
     skip = (page - 1) * page_size
 
+    sort_direction = -1 if order == "newest" else 1
     cursor = (
         collection.find(query)
-        .sort("publish_date", -1)
+        .sort("creation_date", sort_direction)
         .skip(skip)
         .limit(page_size)
     )
@@ -153,5 +155,5 @@ def set_article_saved(article_id: str, saved: bool = Query(...)):
 
 @app.get("/api/saved", response_model=list[Article])
 def list_saved():
-    cursor = get_collection().find({"saved": True}).sort("publish_date", -1)
+    cursor = get_collection().find({"saved": True}).sort("creation_date", -1)
     return [_to_article(doc) for doc in cursor]
