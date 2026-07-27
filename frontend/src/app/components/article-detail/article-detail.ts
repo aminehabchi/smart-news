@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Article } from '../../models/article.model';
 import { ReadingTimePipe } from '../../pipes/reading-time-pipe';
@@ -16,6 +16,7 @@ import { SavedArticlesService } from '../../services/saved-articles';
 })
 export class ArticleDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly articleService = inject(ArticleService);
   readonly savedArticles = inject(SavedArticlesService);
 
@@ -78,6 +79,12 @@ export class ArticleDetail implements OnInit {
 
   filterParams(key: keyof ArticleListFilters, value: string): ArticleListFilters {
     return { [key]: value } as ArticleListFilters;
+  }
+
+  goToTopic(topic: string, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.router.navigate(['/'], { queryParams: { predicted_topic: topic } });
   }
 
   toggleSave(): void {

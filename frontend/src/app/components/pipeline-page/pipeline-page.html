@@ -1,0 +1,33 @@
+<h1>Pipeline</h1>
+
+<div class="run-now-row">
+  <button type="button" class="run-now-btn" (click)="runNow()" [disabled]="triggering() || isRunning()">
+    {{ isRunning() ? 'Run in progress…' : triggering() ? 'Starting…' : '▶ Run now' }}
+  </button>
+  @if (triggerError()) {
+    <span class="trigger-error">{{ triggerError() }}</span>
+  }
+</div>
+
+@if (loading()) {
+  <p>Loading…</p>
+} @else if (runs().length === 0) {
+  <p>No pipeline runs yet.</p>
+} @else {
+  <div class="run-list">
+    @for (run of runs(); track run.id) {
+      <div class="run-row">
+        <span class="run-status" [class]="'status-' + run.status">{{ run.status }}</span>
+        <span class="run-started">{{ run.started_at | date: 'medium' }}</span>
+        <span class="run-trigger">{{ run.trigger }}</span>
+        <span class="run-duration">{{ durationFor(run) }}</span>
+        @if (run.status === 'failed' && run.error) {
+          <details class="run-error">
+            <summary>View error</summary>
+            <pre>{{ run.error }}</pre>
+          </details>
+        }
+      </div>
+    }
+  </div>
+}

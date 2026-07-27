@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Article } from '../../models/article.model';
@@ -7,6 +7,7 @@ import { SourceNamePipe } from '../../pipes/source-name-pipe';
 import { ArticleListFilters, ArticleService } from '../../services/article';
 
 const ADVANCED_FILTER_KEYS: (keyof ArticleListFilters)[] = [
+  'predicted_topic',
   'title',
   'body',
   'persons',
@@ -37,12 +38,14 @@ export class ArticleList implements OnInit {
   readonly source = signal('');
   readonly sentiment = signal<'positive' | 'neutral' | 'negative' | ''>('');
   readonly sources = signal<string[]>([]);
+  readonly topics = signal<string[]>([]);
   readonly showAdvanced = signal(false);
   readonly advancedFilters = signal<ArticleListFilters>({});
   readonly order = signal<'newest' | 'oldest'>('newest');
 
   ngOnInit(): void {
     this.articleService.listSources().subscribe((sources) => this.sources.set(sources));
+    this.articleService.listTopics().subscribe((topics) => this.topics.set(topics));
 
     this.route.queryParamMap.subscribe((params) => {
       this.query.set(params.get('q') ?? '');
@@ -73,6 +76,16 @@ export class ArticleList implements OnInit {
     });
   }
 
+  readonly exportUrl = computed(() =>
+    this.articleService.buildExportUrl({
+      q: this.query(),
+      source: this.source(),
+      sentiment: this.sentiment() || undefined,
+      order: this.order(),
+      ...this.advancedFilters(),
+    }),
+  );
+
   load(): void {
     this.loading.set(true);
     this.articleService
@@ -101,6 +114,16 @@ export class ArticleList implements OnInit {
     });
   }
 
+  filterByTopic(topic: string, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { predicted_topic: topic || null, page: null },
+      queryParamsHandling: 'merge',
+    });
+  }
+
   toggleAdvanced(): void {
     this.showAdvanced.update((value) => !value);
   }
@@ -119,6 +142,7 @@ export class ArticleList implements OnInit {
       relativeTo: this.route,
       queryParams: {
         sentiment: filters.sentiment || null,
+        predicted_topic: filters.predicted_topic || null,
         title: filters.title?.trim() || null,
         body: filters.body?.trim() || null,
         persons: filters.persons?.trim() || null,
@@ -137,6 +161,7 @@ export class ArticleList implements OnInit {
   }
 
   onApplyAdvanced(
+    predictedTopic: string,
     title: string,
     body: string,
     persons: string,
@@ -147,6 +172,7 @@ export class ArticleList implements OnInit {
     sentiment: string,
   ): void {
     this.applyAdvancedFilters({
+      predicted_topic: predictedTopic,
       title,
       body,
       persons,

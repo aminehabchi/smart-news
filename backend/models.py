@@ -55,6 +55,32 @@ class EntityCount(BaseModel):
     count: int
 
 
+class DailySentimentCount(BaseModel):
+    date: str
+    positive: int
+    neutral: int
+    negative: int
+
+
+class PipelineRun(BaseModel):
+    id: str
+    started_at: str
+    finished_at: str | None = None
+    status: str  # "running" | "success" | "failed"
+    trigger: str  # "scheduled" | "manual"
+    output: str | None = None
+    error: str | None = None
+
+
+class CrossSourceMatch(BaseModel):
+    article_id: str
+    source: str | None = None
+    title: str | None = None
+    url: str | None = None
+    sentiment: Sentiment | None = None
+    is_current: bool = False
+
+
 class Stats(BaseModel):
     total_articles: int
     topics: list[CountItem]
@@ -63,3 +89,4 @@ class Stats(BaseModel):
     top_persons: list[EntityCount]
     top_organizations: list[EntityCount]
     top_locations: list[EntityCount]
+    sentiment_trend: list[DailySentimentCount]

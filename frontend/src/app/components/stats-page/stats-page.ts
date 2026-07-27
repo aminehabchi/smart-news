@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
 import { BarList } from '../bar-list/bar-list';
@@ -6,7 +7,7 @@ import { StatsService } from '../../services/stats';
 
 @Component({
   selector: 'app-stats-page',
-  imports: [BarList],
+  imports: [BarList, DatePipe],
   templateUrl: './stats-page.html',
   styleUrl: './stats-page.scss',
 })
@@ -28,6 +29,21 @@ export class StatsPage implements OnInit {
   readonly locationItems = computed(
     () => this.stats()?.top_locations.map((e) => ({ label: e.value, count: e.count })) ?? [],
   );
+
+  readonly trendBars = computed(() => {
+    const trend = this.stats()?.sentiment_trend ?? [];
+    const maxTotal = trend.reduce((max, d) => Math.max(max, d.positive + d.neutral + d.negative), 0) || 1;
+    return trend.map((d) => {
+      const total = d.positive + d.neutral + d.negative;
+      return {
+        date: d.date,
+        positiveHeight: (d.positive / maxTotal) * 100,
+        neutralHeight: (d.neutral / maxTotal) * 100,
+        negativeHeight: (d.negative / maxTotal) * 100,
+        tooltip: `${d.date}: ${total} article${total === 1 ? '' : 's'} — ${d.positive} positive, ${d.neutral} neutral, ${d.negative} negative`,
+      };
+    });
+  });
 
   readonly sentimentSegments = computed(() => {
     const sentiment = this.stats()?.sentiment ?? [];

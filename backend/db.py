@@ -9,6 +9,7 @@ from pymongo.collection import Collection
 logger = logging.getLogger("db")
 
 ARTICLES_COLLECTION = "articles"
+PIPELINE_RUNS_COLLECTION = "pipeline_runs"
 
 _client: MongoClient | None = None
 
@@ -29,3 +30,5 @@ def ensure_indexes() -> None:
         name="article_search",
     )
     get_collection().create_index("saved")
+    get_collection(PIPELINE_RUNS_COLLECTION).create_index("status")
+    get_collection(PIPELINE_RUNS_COLLECTION).create_index("started_at")

@@ -8,6 +8,7 @@ import { Article, ArticlePage } from '../models/article.model';
 export interface ArticleListFilters {
   q?: string;
   source?: string;
+  predicted_topic?: string;
   sentiment?: 'positive' | 'neutral' | 'negative';
   title?: string;
   body?: string;
@@ -22,6 +23,7 @@ export interface ArticleListFilters {
 const FILTER_KEYS: (keyof ArticleListFilters)[] = [
   'q',
   'source',
+  'predicted_topic',
   'sentiment',
   'title',
   'body',
@@ -60,6 +62,22 @@ export class ArticleService {
 
   listSources(): Observable<string[]> {
     return this.http.get<string[]>(`${API_BASE_URL}/sources`);
+  }
+
+  listTopics(): Observable<string[]> {
+    return this.http.get<string[]>(`${API_BASE_URL}/topics`);
+  }
+
+  buildExportUrl(filters: ArticleListFilters = {}): string {
+    let params = new HttpParams();
+    for (const key of FILTER_KEYS) {
+      const value = filters[key];
+      if (value) {
+        params = params.set(key, value);
+      }
+    }
+    const query = params.toString();
+    return `${API_BASE_URL}/articles/export${query ? '?' + query : ''}`;
   }
 
   listSaved(): Observable<Article[]> {

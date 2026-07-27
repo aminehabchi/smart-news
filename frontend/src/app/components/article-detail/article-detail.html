@@ -32,7 +32,11 @@
       @if (a.predicted_topic) {
         <div class="analysis-row">
           <span class="analysis-label">Topic</span>
-          <span class="predicted-topic-value">{{ a.predicted_topic }}</span>
+          <a
+            class="predicted-topic-value"
+            routerLink="/"
+            [queryParams]="{ predicted_topic: a.predicted_topic }"
+          >{{ a.predicted_topic }}</a>
         </div>
       }
       @if (sentimentSegments().length) {
@@ -115,7 +119,10 @@
             <h3>{{ related.title }}</h3>
             <div class="related-meta">
               @if (related.predicted_topic) {
-                <span class="related-topic">{{ related.predicted_topic }}</span>
+                <span
+                  class="related-topic"
+                  (click)="goToTopic(related.predicted_topic, $event)"
+                >{{ related.predicted_topic }}</span>
               }
               <span class="related-date">{{ related.publish_date | date: 'mediumDate' }}</span>
             </div>

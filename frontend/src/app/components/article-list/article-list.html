@@ -18,9 +18,12 @@
     <button type="button" class="advanced-toggle" (click)="toggleAdvanced()">
       {{ showAdvanced() ? '▾' : '▸' }} Advanced filters
     </button>
-    <button type="button" class="order-toggle" (click)="toggleOrder()">
-      {{ order() === 'newest' ? '↓ Newest first' : '↑ Oldest first' }}
-    </button>
+    <div class="header-actions">
+      <button type="button" class="order-toggle" (click)="toggleOrder()">
+        {{ order() === 'newest' ? '↓ Newest first' : '↑ Oldest first' }}
+      </button>
+      <a class="export-link" [href]="exportUrl()" download="articles.csv">⭳ Export CSV</a>
+    </div>
   </div>
 
   @if (showAdvanced()) {
@@ -29,6 +32,7 @@
       (submit)="
         $event.preventDefault();
         onApplyAdvanced(
+          predictedTopicInput.value,
           titleInput.value,
           bodyInput.value,
           personsInput.value,
@@ -47,6 +51,15 @@
           <option value="positive">Positive</option>
           <option value="neutral">Neutral</option>
           <option value="negative">Negative</option>
+        </select>
+      </label>
+      <label>
+        Predicted Topic
+        <select #predictedTopicInput [value]="advancedFilters().predicted_topic ?? ''">
+          <option value="">Any</option>
+          @for (t of topics(); track t) {
+            <option [value]="t">{{ t }}</option>
+          }
         </select>
       </label>
       <label>
@@ -117,7 +130,10 @@
     <a class="article-card" [routerLink]="['/articles', article.id]">
       <h2>{{ article.title }}</h2>
       @if (article.predicted_topic) {
-        <span class="predicted-topic-badge">{{ article.predicted_topic }}</span>
+        <span
+          class="predicted-topic-badge"
+          (click)="filterByTopic(article.predicted_topic, $event)"
+        >{{ article.predicted_topic }}</span>
       }
       <p class="excerpt">{{ article.body?.slice(0, 140) }}&hellip;</p>
       <div class="topics">

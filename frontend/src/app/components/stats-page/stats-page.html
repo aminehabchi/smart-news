@@ -23,6 +23,35 @@
   </div>
 
   <section class="panel">
+    <h2>Sentiment trend (last 30 days)</h2>
+    @if (trendBars().length) {
+      <div class="trend-chart">
+        <div class="trend-bars">
+          @for (bar of trendBars(); track bar.date; let i = $index) {
+            <div class="trend-bar-col" [title]="bar.tooltip">
+              <div class="trend-bar-stack">
+                <div class="trend-segment sentiment-positive" [style.height.%]="bar.positiveHeight"></div>
+                <div class="trend-segment sentiment-neutral" [style.height.%]="bar.neutralHeight"></div>
+                <div class="trend-segment sentiment-negative" [style.height.%]="bar.negativeHeight"></div>
+              </div>
+              @if (i % 5 === 0 || i === trendBars().length - 1) {
+                <span class="trend-bar-label">{{ bar.date | date: 'MMM d' }}</span>
+              }
+            </div>
+          }
+        </div>
+        <div class="sentiment-legend">
+          <span class="legend-item"><i class="legend-dot sentiment-positive"></i>Positive</span>
+          <span class="legend-item"><i class="legend-dot sentiment-neutral"></i>Neutral</span>
+          <span class="legend-item"><i class="legend-dot sentiment-negative"></i>Negative</span>
+        </div>
+      </div>
+    } @else {
+      <p>Not enough data yet.</p>
+    }
+  </section>
+
+  <section class="panel">
     <h2>Sentiment breakdown</h2>
     @if (sentimentSegments().length) {
       <div class="sentiment-chart">

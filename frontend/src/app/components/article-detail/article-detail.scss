@@ -139,6 +139,11 @@ h1 {
   text-transform: capitalize;
   font-weight: 600;
   color: var(--color-accent-fg);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .sentiment-chart {
@@ -316,4 +321,9 @@ h1 {
   text-transform: capitalize;
   font-weight: 600;
   color: var(--color-accent-fg);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
