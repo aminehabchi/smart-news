@@ -6,8 +6,9 @@ Technica), cleans and analyzes it with NLP — named entity recognition
 topic classification (business/entertainment/politics/sport/tech), and
 sentiment analysis (VADER) — stores the results in MongoDB, and serves them
 through a REST API and an Angular UI with full-text search, entity/topic/
-sentiment filtering, related-article suggestions, a stats dashboard, and
-save-for-later.
+sentiment filtering, CSV export of any filtered view, related-article
+suggestions, a stats dashboard (including a 30-day sentiment trend), a
+pipeline run-history/manual-trigger view, and save-for-later.
 
 ## Tech stack
 
@@ -25,8 +26,8 @@ save-for-later.
 
 - `storage/` — MongoDB, run via Docker Compose.
 - `pipeline/` — Playwright scrapers + text cleaning (tokenize, stopword removal, stemming) + NER (spaCy) + sentiment analysis (NLTK VADER) + topic classification (TF-IDF + LogisticRegression, `pipeline/topic_classifier/`, trained on the BBC News dataset). Own venv, shared by all of the above.
-- `backend/` — FastAPI REST API over the stored articles (search, filters, related-article suggestions, aggregate stats, save-for-later). Also runs the scraping pipeline on an hourly schedule. Own venv.
-- `frontend/` — Angular UI: browse/search/filter articles (including by sentiment), view extracted entities/predicted topic/sentiment breakdown, jump to related articles, a stats dashboard, and save articles for later.
+- `backend/` — FastAPI REST API over the stored articles (search, filters, CSV export, related-article/cross-source suggestions, aggregate stats, save-for-later). Also runs the scraping pipeline on an hourly schedule, and tracks/exposes pipeline run history plus a manual-trigger endpoint. Own venv.
+- `frontend/` — Angular UI: browse/search/filter articles (including by sentiment and predicted topic, with CSV export of the current filter), view extracted entities/predicted topic/sentiment breakdown, jump to related articles, a stats dashboard (including a 30-day sentiment trend), a pipeline run-history/manual-trigger page, and save articles for later.
 
 Each directory has its own `README.md` with structure/endpoint details.
 
