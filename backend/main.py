@@ -25,6 +25,7 @@ from models import (
     PipelineRun,
     Sentiment,
     Stats,
+    TopicTrendPoint,
 )
 from scheduler import start_scheduler, trigger_manual_run
 
@@ -165,17 +166,28 @@ def list_articles(
 
 
 _EXPORT_COLUMNS = [
+    "id",
     "title",
     "source",
-    "author",
+    "author_name",
+    "author_link",
     "publish_date",
+    "creation_date",
     "predicted_topic",
+    "topics",
     "sentiment",
     "sentiment_compound",
+    "sentiment_negative",
+    "sentiment_neutral",
+    "sentiment_positive",
     "persons",
     "organizations",
     "locations",
+    "dates_times",
+    "quantities_percentages",
+    "saved",
     "url",
+    "body",
 ]
 
 
@@ -189,6 +201,19 @@ def _sentiment_label(compound: float | None) -> str:
     return "neutral"
 
 
+# Leading characters that Excel/Sheets/LibreOffice interpret as the start of
+# a formula when a CSV cell is opened -- scraped article content (title,
+# body, entity text, ...) isn't fully trusted, so any cell starting with one
+# of these must be neutralized before being written out.
+_FORMULA_TRIGGER_CHARS = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_safe(value: str) -> str:
+    if value.startswith(_FORMULA_TRIGGER_CHARS):
+        return "'" + value
+    return value
+
+
 def _export_rows(cursor):
     buffer = io.StringIO()
     writer = csv.writer(buffer)
@@ -199,20 +224,33 @@ def _export_rows(cursor):
         buffer.seek(0)
         buffer.truncate(0)
         entities = doc.get("entities") or {}
-        compound = (doc.get("sentiment") or {}).get("compound")
+        author = doc.get("author") or {}
+        sentiment = doc.get("sentiment") or {}
+        compound = sentiment.get("compound")
         writer.writerow(
             [
-                doc.get("title") or "",
-                doc.get("source") or "",
-                (doc.get("author") or {}).get("name") or "",
-                doc.get("publish_date") or "",
-                doc.get("predicted_topic") or "",
+                str(doc["_id"]),
+                _csv_safe(doc.get("title") or ""),
+                _csv_safe(doc.get("source") or ""),
+                _csv_safe(author.get("name") or ""),
+                _csv_safe(author.get("link") or ""),
+                _csv_safe(doc.get("publish_date") or ""),
+                _csv_safe(doc.get("creation_date") or ""),
+                _csv_safe(doc.get("predicted_topic") or ""),
+                _csv_safe("; ".join(doc.get("topics") or [])),
                 _sentiment_label(compound),
                 compound if compound is not None else "",
-                "; ".join(entities.get("persons") or []),
-                "; ".join(entities.get("organizations") or []),
-                "; ".join(entities.get("locations") or []),
-                doc.get("url") or "",
+                sentiment.get("neg") if sentiment.get("neg") is not None else "",
+                sentiment.get("neu") if sentiment.get("neu") is not None else "",
+                sentiment.get("pos") if sentiment.get("pos") is not None else "",
+                _csv_safe("; ".join(entities.get("persons") or [])),
+                _csv_safe("; ".join(entities.get("organizations") or [])),
+                _csv_safe("; ".join(entities.get("locations") or [])),
+                _csv_safe("; ".join(entities.get("dates_times") or [])),
+                _csv_safe("; ".join(entities.get("quantities_percentages") or [])),
+                "true" if doc.get("saved") else "false",
+                _csv_safe(doc.get("url") or ""),
+                _csv_safe(doc.get("body") or ""),
             ]
         )
         yield buffer.getvalue()
@@ -470,6 +508,46 @@ def _daily_sentiment_trend(collection, days: int = 30) -> list[DailySentimentCou
     ]
 
 
+def _daily_topic_trend(collection, days: int = 30, top_n: int = 6) -> list[TopicTrendPoint]:
+    """Per-day article counts (by creation_date) for the `top_n` most common
+    topics over the last `days`, zero-filled across every day/topic combo so
+    the stats-page trend chart's lines all share the same x-axis."""
+    now = datetime.now(timezone.utc)
+    date_keys = [(now - timedelta(days=offset)).strftime("%Y-%m-%d") for offset in range(days - 1, -1, -1)]
+    cutoff = (now - timedelta(days=days)).isoformat()
+
+    top_topics = [
+        doc["_id"]
+        for doc in collection.aggregate(
+            [
+                {"$match": {"creation_date": {"$gte": cutoff}, "predicted_topic": {"$exists": True, "$ne": None}}},
+                {"$group": {"_id": "$predicted_topic", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": top_n},
+            ]
+        )
+    ]
+    if not top_topics:
+        return []
+
+    pipeline = [
+        {"$match": {"creation_date": {"$gte": cutoff}, "predicted_topic": {"$in": top_topics}}},
+        {
+            "$group": {
+                "_id": {"date": {"$substrCP": ["$creation_date", 0, 10]}, "topic": "$predicted_topic"},
+                "count": {"$sum": 1},
+            }
+        },
+    ]
+    counts = {(doc["_id"]["date"], doc["_id"]["topic"]): doc["count"] for doc in collection.aggregate(pipeline)}
+
+    return [
+        TopicTrendPoint(date=date, topic=topic, count=counts.get((date, topic), 0))
+        for date in date_keys
+        for topic in top_topics
+    ]
+
+
 @app.get("/api/stats", response_model=Stats)
 def get_stats():
     collection = get_collection()
@@ -492,6 +570,7 @@ def get_stats():
         top_organizations=_top_entities(collection, "entities.organizations"),
         top_locations=_top_entities(collection, "entities.locations"),
         sentiment_trend=_daily_sentiment_trend(collection),
+        topic_trend=_daily_topic_trend(collection),
     )
 
 

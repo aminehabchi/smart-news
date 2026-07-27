@@ -15,6 +15,12 @@ export interface DailySentimentCount {
   negative: number;
 }
 
+export interface TopicTrendPoint {
+  date: string;
+  topic: string;
+  count: number;
+}
+
 export interface Stats {
   total_articles: number;
   topics: CountItem[];
@@ -24,4 +30,5 @@ export interface Stats {
   top_organizations: EntityCount[];
   top_locations: EntityCount[];
   sentiment_trend: DailySentimentCount[];
+  topic_trend: TopicTrendPoint[];
 }

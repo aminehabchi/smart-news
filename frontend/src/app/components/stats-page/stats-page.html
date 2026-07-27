@@ -52,6 +52,76 @@
   </section>
 
   <section class="panel">
+    <h2>Topics trend (last 30 days)</h2>
+    @if (topicTrendChart(); as chart) {
+      <div class="topic-trend-chart">
+        <div class="topic-trend-svg-wrap">
+          <svg
+            [attr.viewBox]="'0 0 ' + chart.width + ' ' + chart.height"
+            class="topic-trend-svg"
+            role="img"
+            aria-label="Article count per topic over the last 30 days"
+          >
+            @for (grid of chart.gridLines; track grid.y) {
+              <line
+                class="topic-trend-gridline"
+                [attr.x1]="chart.plotLeft"
+                [attr.x2]="chart.plotRight"
+                [attr.y1]="grid.y"
+                [attr.y2]="grid.y"
+              />
+              <text class="topic-trend-axis-label" [attr.x]="chart.plotLeft - 6" [attr.y]="grid.y + 3" text-anchor="end">
+                {{ grid.label }}
+              </text>
+            }
+            @for (tick of chart.xTicks; track tick.date) {
+              <text
+                class="topic-trend-axis-label"
+                [attr.x]="tick.x"
+                [attr.y]="chart.height - 6"
+                [attr.text-anchor]="tick.anchor"
+              >
+                {{ tick.date | date: 'MMM d' }}
+              </text>
+            }
+            @for (series of chart.series; track series.topic) {
+              <polyline [attr.points]="series.pointsAttr" [class]="'topic-trend-line ' + series.colorClass"></polyline>
+              <circle [attr.cx]="series.endX" [attr.cy]="series.endY" r="4" [class]="'topic-trend-dot ' + series.colorClass"></circle>
+            }
+            @for (series of chart.series; track series.topic) {
+              @for (point of series.hoverPoints; track point.x) {
+                <circle
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="7"
+                  class="topic-trend-hit"
+                  pointer-events="all"
+                  (mouseenter)="showTopicPoint(point)"
+                  (mouseleave)="hideTopicPoint()"
+                ></circle>
+              }
+            }
+          </svg>
+          @if (hoveredTopicPoint(); as hp) {
+            <div class="topic-trend-tooltip" [style.left.%]="hp.xPercent" [style.top.%]="hp.yPercent">
+              {{ hp.tooltip }}
+            </div>
+          }
+        </div>
+        <div class="sentiment-legend">
+          @for (series of chart.series; track series.topic) {
+            <span class="legend-item">
+              <i class="legend-dot" [class]="series.colorClass"></i>{{ series.label }}
+            </span>
+          }
+        </div>
+      </div>
+    } @else {
+      <p>Not enough data yet.</p>
+    }
+  </section>
+
+  <section class="panel">
     <h2>Sentiment breakdown</h2>
     @if (sentimentSegments().length) {
       <div class="sentiment-chart">

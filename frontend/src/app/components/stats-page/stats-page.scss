@@ -2,6 +2,27 @@
   display: block;
   max-width: 1040px;
   margin: 0 auto;
+
+  // Categorical series palette for the topics-trend line chart -- validated
+  // (CVD-safe adjacent pairs, ok normal-vision separation) against this
+  // app's light/dark canvas via the dataviz skill's validator.
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+  }
 }
 
 h1 {
@@ -121,6 +142,78 @@ h1 {
   font-size: 0.65rem;
   color: var(--color-fg-muted);
   white-space: nowrap;
+}
+
+.topic-trend-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.topic-trend-svg-wrap {
+  position: relative;
+}
+
+.topic-trend-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.topic-trend-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: var(--color-canvas-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.78rem;
+  color: var(--color-fg-default);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 6px var(--color-shadow);
+  z-index: 1;
+}
+
+.topic-trend-gridline {
+  stroke: var(--color-border-muted);
+  stroke-width: 1;
+}
+
+.topic-trend-axis-label {
+  fill: var(--color-fg-muted);
+  font-size: 9px;
+}
+
+// Shared by the line/dot marks (stroke/fill) and the HTML legend swatch
+// (background) -- one class per series color, used across both element kinds.
+// Declared first: .topic-trend-line's fill:none and .topic-trend-dot's
+// ring-stroke below need to win over this rule's fill/stroke respectively,
+// same specificity, so source order decides.
+@for $i from 1 through 6 {
+  .series-#{$i} {
+    stroke: var(--series-#{$i});
+    fill: var(--series-#{$i});
+    background: var(--series-#{$i});
+  }
+}
+
+.topic-trend-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.topic-trend-dot {
+  stroke: var(--color-canvas-default);
+  stroke-width: 2;
+}
+
+.topic-trend-hit {
+  fill: transparent;
+  pointer-events: all;
+  cursor: default;
 }
 
 .sentiment-chart {

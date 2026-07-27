@@ -62,6 +62,12 @@ class DailySentimentCount(BaseModel):
     negative: int
 
 
+class TopicTrendPoint(BaseModel):
+    date: str
+    topic: str
+    count: int
+
+
 class PipelineRun(BaseModel):
     id: str
     started_at: str
@@ -90,3 +96,4 @@ class Stats(BaseModel):
     top_organizations: list[EntityCount]
     top_locations: list[EntityCount]
     sentiment_trend: list[DailySentimentCount]
+    topic_trend: list[TopicTrendPoint]
