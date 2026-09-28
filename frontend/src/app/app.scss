@@ -1,5 +1,5 @@
 main {
-  max-width: 1200px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 3rem) var(--page-gutter) 4rem;
 }

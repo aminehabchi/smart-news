@@ -37,7 +37,7 @@ Pipes:
 
 Config:
 
-- `config.ts` — `API_BASE_URL`, currently hardcoded to `http://localhost:8000/api`.
+- `config.ts` — `API_BASE_URL`, currently hardcoded to `http://localhost:8001/api`.
 
 ## Setup
 
@@ -51,4 +51,4 @@ Config:
 ./run.sh
 ```
 
-Requires `backend` (the API) running on `http://localhost:8000` and `storage` (MongoDB) up.
+Requires `backend` (the API) running on `http://localhost:8001` and `storage` (MongoDB) up.

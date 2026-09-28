@@ -1,156 +1,235 @@
-<div class="source-filters">
-  <button class="source-filter-chip" [class.active]="!source()" (click)="filterBySource('')">
-    All
-  </button>
-  @for (s of sources(); track s) {
-    <button
-      class="source-filter-chip"
-      [class.active]="source() === s"
-      (click)="filterBySource(s)"
-    >
-      {{ s | sourceName }}
-    </button>
-  }
-</div>
-
-<div class="advanced-filters">
-  <div class="advanced-filters-header">
-    <button type="button" class="advanced-toggle" (click)="toggleAdvanced()">
-      {{ showAdvanced() ? '▾' : '▸' }} Advanced filters
-    </button>
-    <div class="header-actions">
-      <button type="button" class="order-toggle" (click)="toggleOrder()">
-        {{ order() === 'newest' ? '↓ Newest first' : '↑ Oldest first' }}
-      </button>
-      <a class="export-link" [href]="exportUrl()" download="articles.csv">⭳ Export CSV</a>
-    </div>
-  </div>
-
-  @if (showAdvanced()) {
-    <form
-      class="advanced-filters-form"
-      (submit)="
-        $event.preventDefault();
-        onApplyAdvanced(
-          predictedTopicInput.value,
-          titleInput.value,
-          bodyInput.value,
-          personsInput.value,
-          organizationsInput.value,
-          locationsInput.value,
-          datesTimesInput.value,
-          quantitiesInput.value,
-          sentimentInput.value
-        )
-      "
-    >
-      <label>
-        Sentiment
-        <select #sentimentInput [value]="sentiment()">
-          <option value="">Any</option>
-          <option value="positive">Positive</option>
-          <option value="neutral">Neutral</option>
-          <option value="negative">Negative</option>
-        </select>
-      </label>
-      <label>
-        Predicted Topic
-        <select #predictedTopicInput [value]="advancedFilters().predicted_topic ?? ''">
-          <option value="">Any</option>
-          @for (t of topics(); track t) {
-            <option [value]="t">{{ t }}</option>
-          }
-        </select>
-      </label>
-      <label>
-        Title
-        <input #titleInput type="text" [value]="advancedFilters().title ?? ''" placeholder="Search in title…" />
-      </label>
-      <label>
-        Body
-        <input #bodyInput type="text" [value]="advancedFilters().body ?? ''" placeholder="Search in body…" />
-      </label>
-      <label>
-        Persons
-        <input #personsInput type="text" [value]="advancedFilters().persons ?? ''" placeholder="e.g. Tim Cook" />
-      </label>
-      <label>
-        Organizations
-        <input
-          #organizationsInput
-          type="text"
-          [value]="advancedFilters().organizations ?? ''"
-          placeholder="e.g. Apple"
-        />
-      </label>
-      <label>
-        Locations
-        <input
-          #locationsInput
-          type="text"
-          [value]="advancedFilters().locations ?? ''"
-          placeholder="e.g. California"
-        />
-      </label>
-      <label>
-        Dates &amp; Times
-        <input
-          #datesTimesInput
-          type="text"
-          [value]="advancedFilters().dates_times ?? ''"
-          placeholder="e.g. Monday"
-        />
-      </label>
-      <label>
-        Quantities &amp; Percentages
-        <input
-          #quantitiesInput
-          type="text"
-          [value]="advancedFilters().quantities_percentages ?? ''"
-          placeholder="e.g. 12%"
-        />
-      </label>
-
-      <div class="advanced-filters-actions">
-        <button type="submit" class="apply-btn">Apply</button>
-        <button type="button" class="clear-btn" (click)="clearAdvancedFilters()">Clear filters</button>
-      </div>
-    </form>
-  }
-</div>
-
-@if (loading()) {
-  <p>Loading…</p>
-} @else if (articles().length === 0) {
-  <p>No articles found.</p>
-}
-
-<div class="article-grid">
-  @for (article of articles(); track article.id) {
-    <a class="article-card" [routerLink]="['/articles', article.id]">
-      <h2>{{ article.title }}</h2>
-      @if (article.predicted_topic) {
-        <span
-          class="predicted-topic-badge"
-          (click)="filterByTopic(article.predicted_topic, $event)"
-        >{{ article.predicted_topic }}</span>
-      }
-      <p class="excerpt">{{ article.body?.slice(0, 140) }}&hellip;</p>
-      <div class="topics">
-        @for (topic of article.topics; track topic) {
-          <span class="topic-chip">{{ topic }}</span>
+<div class="layout">
+  <div class="feed">
+    <div class="feed-tabs">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" [class.active]="!source()" (click)="filterBySource('')">
+          All
+        </button>
+        @for (s of sources(); track s) {
+          <button
+            class="tab"
+            role="tab"
+            [class.active]="source() === s"
+            (click)="filterBySource(s)"
+          >
+            {{ s | sourceName }}
+          </button>
         }
       </div>
-      <div class="meta">
-        <span class="author">{{ article.author.name }}</span>
-        <span class="date">{{ article.publish_date | date: 'mediumDate' }}</span>
+      <div class="feed-actions">
+        <button
+          type="button"
+          class="icon-btn"
+          (click)="toggleOrder()"
+          [title]="order() === 'newest' ? 'Newest first' : 'Oldest first'"
+        >
+          <lucide-icon
+            [name]="order() === 'newest' ? 'arrow-down-wide-narrow' : 'arrow-up-narrow-wide'"
+          />
+        </button>
+        <button
+          type="button"
+          class="icon-btn"
+          [class.active]="showAdvanced()"
+          (click)="toggleAdvanced()"
+          title="Advanced filters"
+        >
+          <lucide-icon name="sliders-horizontal" />
+        </button>
+        <a class="icon-btn" [href]="exportUrl()" download="articles.csv" title="Export CSV">
+          <lucide-icon name="download" />
+        </a>
       </div>
-    </a>
-  }
-</div>
+    </div>
 
-<div class="pagination">
-  <button (click)="goToPage(page() - 1)" [disabled]="page() <= 1">Previous</button>
-  <span>Page {{ page() }} of {{ totalPages() }}</span>
-  <button (click)="goToPage(page() + 1)" [disabled]="page() >= totalPages()">Next</button>
+    <div class="advanced-filters">
+      @if (showAdvanced()) {
+        <form
+          class="advanced-filters-form"
+          (submit)="
+            $event.preventDefault();
+            onApplyAdvanced(
+              predictedTopicInput.value,
+              titleInput.value,
+              bodyInput.value,
+              personsInput.value,
+              organizationsInput.value,
+              locationsInput.value,
+              datesTimesInput.value,
+              quantitiesInput.value,
+              sentimentInput.value
+            )
+          "
+        >
+          <label>
+            Sentiment
+            <select #sentimentInput [value]="sentiment()">
+              <option value="">Any</option>
+              <option value="positive">Positive</option>
+              <option value="neutral">Neutral</option>
+              <option value="negative">Negative</option>
+            </select>
+          </label>
+          <label>
+            Predicted Topic
+            <select #predictedTopicInput [value]="advancedFilters().predicted_topic ?? ''">
+              <option value="">Any</option>
+              @for (t of topics(); track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Title
+            <input
+              #titleInput
+              type="text"
+              [value]="advancedFilters().title ?? ''"
+              placeholder="Search in title…"
+            />
+          </label>
+          <label>
+            Body
+            <input
+              #bodyInput
+              type="text"
+              [value]="advancedFilters().body ?? ''"
+              placeholder="Search in body…"
+            />
+          </label>
+          <label>
+            Persons
+            <input
+              #personsInput
+              type="text"
+              [value]="advancedFilters().persons ?? ''"
+              placeholder="e.g. Tim Cook"
+            />
+          </label>
+          <label>
+            Organizations
+            <input
+              #organizationsInput
+              type="text"
+              [value]="advancedFilters().organizations ?? ''"
+              placeholder="e.g. Apple"
+            />
+          </label>
+          <label>
+            Locations
+            <input
+              #locationsInput
+              type="text"
+              [value]="advancedFilters().locations ?? ''"
+              placeholder="e.g. California"
+            />
+          </label>
+          <label>
+            Dates &amp; Times
+            <input
+              #datesTimesInput
+              type="text"
+              [value]="advancedFilters().dates_times ?? ''"
+              placeholder="e.g. Monday"
+            />
+          </label>
+          <label>
+            Quantities &amp; Percentages
+            <input
+              #quantitiesInput
+              type="text"
+              [value]="advancedFilters().quantities_percentages ?? ''"
+              placeholder="e.g. 12%"
+            />
+          </label>
+
+          <div class="advanced-filters-actions">
+            <button type="submit" class="btn btn-primary">Apply</button>
+            <button type="button" class="btn btn-ghost" (click)="clearAdvancedFilters()">
+              Clear filters
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+
+    @if (loading()) {
+      <p class="status-text"><lucide-icon name="loader-circle" class="spin" />Loading…</p>
+    } @else if (articles().length === 0) {
+      <p class="status-text"><lucide-icon name="search-x" />No articles found.</p>
+    }
+
+    <div class="story-list">
+      @for (article of articles(); track article.id) {
+        <article class="story">
+          <a class="story-link" [routerLink]="['/articles', article.id]">
+            <div class="story-byline">
+              <span class="story-source">{{ article.source | sourceName }}</span>
+              @if (article.author.name) {
+                <span class="story-author">by {{ article.author.name }}</span>
+              }
+            </div>
+            <h2>{{ article.title }}</h2>
+            <p class="excerpt">{{ article.body?.slice(0, 160) }}&hellip;</p>
+          </a>
+          <div class="story-footer">
+            @if (article.predicted_topic) {
+              <button class="chip" (click)="filterByTopic(article.predicted_topic, $event)">
+                {{ article.predicted_topic }}
+              </button>
+            }
+            <span class="story-date">{{ article.publish_date | date: 'MMM d, y' }}</span>
+            @for (topic of article.topics.slice(0, 2); track topic) {
+              <span class="story-tag">{{ topic }}</span>
+            }
+            <button
+              class="icon-btn story-save"
+              [class.active]="savedArticles.isSaved(article.id)"
+              (click)="savedArticles.toggle(article.id)"
+              [title]="savedArticles.isSaved(article.id) ? 'Remove from saved' : 'Save for later'"
+            >
+              <lucide-icon
+                [name]="savedArticles.isSaved(article.id) ? 'bookmark-check' : 'bookmark-plus'"
+              />
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="btn btn-outline" (click)="goToPage(page() - 1)" [disabled]="page() <= 1">
+          <lucide-icon name="chevron-left" [size]="16" />Previous
+        </button>
+        <span>Page {{ page() }} of {{ totalPages() }}</span>
+        <button
+          class="btn btn-outline"
+          (click)="goToPage(page() + 1)"
+          [disabled]="page() >= totalPages()"
+        >
+          Next<lucide-icon name="chevron-right" [size]="16" />
+        </button>
+      </div>
+    }
+  </div>
+
+  <aside class="sidebar">
+    <h3>Recommended topics</h3>
+    <div class="sidebar-chips">
+      @for (t of topics(); track t) {
+        <button
+          class="chip"
+          [class.active]="advancedFilters().predicted_topic === t"
+          (click)="filterByTopic(advancedFilters().predicted_topic === t ? '' : t, $event)"
+        >
+          {{ t }}
+        </button>
+      }
+    </div>
+    <p class="sidebar-note">
+      <lucide-icon name="sparkles" [size]="16" />
+      Topics are predicted by the classifier, so they can differ from the source's own tags.
+    </p>
+  </aside>
 </div>

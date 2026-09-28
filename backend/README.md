@@ -18,6 +18,7 @@ Articles:
 - `GET /api/articles/{id}/related?limit=5` — other articles scored by shared topic/entities/sentiment closeness.
 - `GET /api/articles/{id}/cross-source` — the article plus the best matching article from each *other* source for the same story (stricter entity/topic-overlap threshold than `/related`), for comparing how sources cover the same story.
 - `PUT /api/articles/{id}/save?saved=true` — toggle save-for-later.
+- `DELETE /api/articles/{id}` — delete an article (`204`, or `404` if not found). Its URL is recorded in the `deleted_urls` collection, which the pipeline skips, so the next scrape won't re-add it.
 - `GET /api/saved` — all saved articles.
 
 Reference lists:
@@ -46,6 +47,6 @@ Pipeline:
 ./run.sh
 ```
 
-Requires `storage` (MongoDB) to be running. Serves on `http://localhost:8000`
+Requires `storage` (MongoDB) to be running. Serves on `http://localhost:8001`
 (configurable via `APP_HOST`/`APP_PORT` in the root `.env`). Interactive docs
 at `/docs`.

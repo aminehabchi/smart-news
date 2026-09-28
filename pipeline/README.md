@@ -9,7 +9,7 @@ sentiment, predicts a topic category, and stores the result in MongoDB
 
 ## Structure
 
-- `scrapers/{techcrunch,theverge,arstechnica}.py` — Playwright scrapers. Each `scrape_latest(limit=20)` returns a list of dicts:
+- `scrapers/{techcrunch,theverge,arstechnica}.py` — Playwright scrapers. Each `scrape_latest(limit=...)` (the orchestrator passes `SCRAPER_LIMIT` from `.env`, default 20) returns a list of dicts:
   `creation_date` (when scraped), `publish_date`, `title`, `body`, `topics` (array),
   `author` (`{name, link}`), `url`, `source`.
 - `text_preprocessing/preprocessing.py` — cleans scraped text and produces derived fields (`clean_text`, `stemmed_tokens`) via tokenization, stopword removal, and stemming, without touching the original `body` (NER needs original casing).

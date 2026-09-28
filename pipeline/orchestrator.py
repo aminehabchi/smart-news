@@ -11,13 +11,14 @@ processed in one pass.
 """
 
 import logging
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
 from dotenv import load_dotenv
 
-from db import insert_articles, insert_word_frequencies
+from db import get_deleted_urls, insert_articles, insert_word_frequencies
 from model import Article
 from nlp_engine.ner import extract_entities
 from nlp_engine.sentiment import analyze_sentiment
@@ -28,6 +29,9 @@ from text_preprocessing.preprocessing import clean_article
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 logger = logging.getLogger("orchestrator")
+
+# Max articles to scrape from each source per run.
+SCRAPER_LIMIT = int(os.getenv("SCRAPER_LIMIT", "20"))
 
 SCRAPERS = [techcrunch, theverge, arstechnica]
 
@@ -50,13 +54,16 @@ def main() -> None:
     else:
         logger.warning("No trained topic classifier at %s, skipping topic prediction.", TOPIC_MODEL_PATH)
 
+    deleted_urls = get_deleted_urls()
+
     total = 0
     batches: list[tuple[str, list[Article]]] = []
     all_articles: list[Article] = []
 
     for scraper in SCRAPERS:
         try:
-            raw_articles = scraper.scrape_latest(limit=20)
+            raw_articles = scraper.scrape_latest(limit=SCRAPER_LIMIT)
+            raw_articles = [data for data in raw_articles if data.get("url") not in deleted_urls]
             articles = [clean_article(Article(**data)) for data in raw_articles]
         except Exception:
             logger.error("%s: scraping failed, skipping this source.", scraper.SOURCE, exc_info=True)

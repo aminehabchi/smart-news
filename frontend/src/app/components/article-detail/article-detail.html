@@ -1,34 +1,85 @@
 @if (article(); as a) {
-  <div class="title-row">
-    <h1>{{ a.title }}</h1>
-    <button class="save-btn" [class.saved]="savedArticles.isSaved(a.id)" (click)="toggleSave()">
-      {{ savedArticles.isSaved(a.id) ? '✓ Saved for later' : '+ Save for later' }}
-    </button>
+  <h1>{{ a.title }}</h1>
+
+  <div class="byline">
+    <span class="avatar"><lucide-icon name="user" [size]="22" /></span>
+    <div class="byline-text">
+      <div class="byline-author">
+        @if (a.author.link) {
+          <a [href]="a.author.link" target="_blank" rel="noopener">{{
+            a.author.name || 'Unknown author'
+          }}</a>
+        } @else {
+          <span>{{ a.author.name || 'Unknown author' }}</span>
+        }
+        @if (a.source) {
+          <span class="meta-sep">·</span>
+          <a class="byline-source" [href]="'https://' + a.source" target="_blank" rel="noopener">
+            {{ a.source | sourceName }}
+          </a>
+        }
+      </div>
+      <div class="byline-meta">
+        @if (a.body) {
+          <span>{{ a.body | readingTime }}</span>
+          <span class="meta-sep">·</span>
+        }
+        <span [title]="'Scraped ' + ((a.creation_date | date: 'medium') || 'date unknown')">
+          {{ (a.publish_date | date: 'MMM d, y') || '—' }}
+        </span>
+      </div>
+    </div>
   </div>
 
-  <div class="meta-strip">
-    @if (a.author.link) {
-      <a [href]="a.author.link" target="_blank" rel="noopener">{{ a.author.name || 'Unknown author' }}</a>
+  <div class="action-bar">
+    @if (a.predicted_topic) {
+      <a class="chip" routerLink="/" [queryParams]="{ predicted_topic: a.predicted_topic }">
+        <lucide-icon name="tag" [size]="14" />{{ a.predicted_topic }}
+      </a>
+    }
+    @if (confirmingDelete()) {
+      <div class="delete-confirm">
+        <span>Delete this article?</span>
+        <button class="btn btn-danger" (click)="deleteArticle()" [disabled]="deleting()">
+          @if (deleting()) {
+            <lucide-icon name="loader-circle" [size]="16" class="spin" />
+          }
+          Delete
+        </button>
+        <button class="btn btn-ghost" (click)="confirmingDelete.set(false)" [disabled]="deleting()">Cancel</button>
+      </div>
     } @else {
-      <span>{{ a.author.name || 'Unknown author' }}</span>
-    }
-    <span class="meta-sep">·</span>
-    <span [title]="'Scraped ' + ((a.creation_date | date: 'medium') || 'date unknown')">
-      {{ (a.publish_date | date: 'mediumDate') || '—' }}
-    </span>
-    @if (a.source) {
-      <span class="meta-sep">·</span>
-      <a [href]="'https://' + a.source" target="_blank" rel="noopener">{{ a.source | sourceName }}</a>
-    }
-    @if (a.body) {
-      <span class="meta-sep">·</span>
-      <span>{{ a.body | readingTime }}</span>
+      <div class="action-bar-right">
+        <button
+          class="icon-btn"
+          [class.active]="savedArticles.isSaved(a.id)"
+          (click)="toggleSave()"
+          [title]="savedArticles.isSaved(a.id) ? 'Saved for later' : 'Save for later'"
+        >
+          <lucide-icon
+            [name]="savedArticles.isSaved(a.id) ? 'bookmark-check' : 'bookmark-plus'"
+            [size]="22"
+          />
+        </button>
+        @if (a.url) {
+          <a class="icon-btn" [href]="a.url" target="_blank" rel="noopener" title="Read the original">
+            <lucide-icon name="external-link" [size]="22" />
+          </a>
+        }
+        <button class="icon-btn delete-btn" (click)="confirmingDelete.set(true)" title="Delete article">
+          <lucide-icon name="trash-2" [size]="22" />
+        </button>
+      </div>
     }
   </div>
+
+  @if (deleteError()) {
+    <p class="delete-error"><lucide-icon name="triangle-alert" [size]="16" />{{ deleteError() }}</p>
+  }
 
   @if (a.predicted_topic || sentimentSegments().length) {
     <section class="card">
-      <h2>Analysis</h2>
+      <h2><lucide-icon name="sparkles" [size]="18" />Analysis</h2>
       @if (a.predicted_topic) {
         <div class="analysis-row">
           <span class="analysis-label">Topic</span>
@@ -36,7 +87,8 @@
             class="predicted-topic-value"
             routerLink="/"
             [queryParams]="{ predicted_topic: a.predicted_topic }"
-          >{{ a.predicted_topic }}</a>
+            >{{ a.predicted_topic }}</a
+          >
         </div>
       }
       @if (sentimentSegments().length) {
@@ -74,23 +126,30 @@
 
   @if (a.topics.length || entityGroups().length) {
     <section class="card">
-      <h2>Tags &amp; Entities</h2>
+      <h2><lucide-icon name="layers" [size]="18" />Tags &amp; Entities</h2>
       @if (a.topics.length) {
         <div class="entity-group">
-          <span class="entity-group-label">Topics</span>
+          <span class="entity-group-label"><lucide-icon name="hash" [size]="14" />Source tags</span>
           <div class="chip-row">
             @for (topic of a.topics; track topic) {
-              <span class="topic-chip">{{ topic }}</span>
+              <span class="chip chip-static">{{ topic }}</span>
             }
           </div>
         </div>
       }
       @for (group of entityGroups(); track group.label) {
         <div class="entity-group">
-          <span class="entity-group-label">{{ group.label }}</span>
+          <span class="entity-group-label"
+            ><lucide-icon [name]="group.icon" [size]="14" />{{ group.label }}</span
+          >
           <div class="chip-row">
             @for (value of group.values; track value) {
-              <a class="entity-chip" routerLink="/" [queryParams]="filterParams(group.key, value)">{{ value }}</a>
+              <a
+                class="chip entity-chip"
+                routerLink="/"
+                [queryParams]="filterParams(group.key, value)"
+                >{{ value }}</a
+              >
             }
           </div>
         </div>
@@ -106,25 +165,26 @@
 
   @if (a.url) {
     <p class="original-link">
-      Original article: <a [href]="a.url" target="_blank" rel="noopener">{{ a.url }}</a>
+      <lucide-icon name="external-link" [size]="16" />
+      Originally published at
+      <a [href]="a.url" target="_blank" rel="noopener">{{ a.source | sourceName }}</a>
     </p>
   }
 
   @if (relatedArticles().length) {
     <section class="related">
-      <h2>Related articles</h2>
+      <h2>More like this</h2>
       <div class="related-grid">
         @for (related of relatedArticles(); track related.id) {
           <a class="related-card" [routerLink]="['/articles', related.id]">
             <h3>{{ related.title }}</h3>
             <div class="related-meta">
               @if (related.predicted_topic) {
-                <span
-                  class="related-topic"
-                  (click)="goToTopic(related.predicted_topic, $event)"
-                >{{ related.predicted_topic }}</span>
+                <span class="related-topic" (click)="goToTopic(related.predicted_topic, $event)">{{
+                  related.predicted_topic
+                }}</span>
               }
-              <span class="related-date">{{ related.publish_date | date: 'mediumDate' }}</span>
+              <span class="related-date">{{ related.publish_date | date: 'MMM d, y' }}</span>
             </div>
           </a>
         }
@@ -132,5 +192,5 @@
     </section>
   }
 } @else {
-  <p>Loading…</p>
+  <p class="status-text"><lucide-icon name="loader-circle" class="spin" />Loading…</p>
 }

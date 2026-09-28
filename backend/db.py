@@ -10,6 +10,9 @@ logger = logging.getLogger("db")
 
 ARTICLES_COLLECTION = "articles"
 PIPELINE_RUNS_COLLECTION = "pipeline_runs"
+# URLs of articles deleted via the API -- the pipeline skips these so a
+# deleted article isn't re-inserted on the next scrape.
+DELETED_URLS_COLLECTION = "deleted_urls"
 
 _client: MongoClient | None = None
 
@@ -32,3 +35,4 @@ def ensure_indexes() -> None:
     get_collection().create_index("saved")
     get_collection(PIPELINE_RUNS_COLLECTION).create_index("status")
     get_collection(PIPELINE_RUNS_COLLECTION).create_index("started_at")
+    get_collection(DELETED_URLS_COLLECTION).create_index("url", unique=True)

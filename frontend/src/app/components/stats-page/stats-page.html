@@ -1,42 +1,48 @@
-<h1>Statistics</h1>
+<h1 class="page-title">Statistics</h1>
 
 @if (loading()) {
-  <p>Loading…</p>
+  <p class="status-text"><lucide-icon name="loader-circle" class="spin" />Loading…</p>
 } @else if (!stats()) {
-  <p>Couldn't load statistics.</p>
+  <p class="status-text"><lucide-icon name="triangle-alert" />Couldn't load statistics.</p>
 } @else {
   <div class="stat-tile">
+    <lucide-icon name="file-text" [size]="24" />
     <span class="stat-tile-value">{{ stats()!.total_articles }}</span>
     <span class="stat-tile-label">Total articles</span>
   </div>
 
   <div class="panel-grid">
     <section class="panel">
-      <h2>Articles by topic</h2>
+      <h2><lucide-icon name="tag" [size]="18" />Articles by topic</h2>
       <app-bar-list [items]="topicItems()" />
     </section>
 
     <section class="panel">
-      <h2>Articles by source</h2>
+      <h2><lucide-icon name="globe" [size]="18" />Articles by source</h2>
       <app-bar-list [items]="sourceItems()" />
     </section>
   </div>
 
   <section class="panel">
-    <h2>Sentiment trend (last 30 days)</h2>
+    <h2><lucide-icon name="activity" [size]="18" />Sentiment trend <span class="h2-note">last 30 days</span></h2>
     @if (trendBars().length) {
       <div class="trend-chart">
-        <div class="trend-bars">
-          @for (bar of trendBars(); track bar.date; let i = $index) {
-            <div class="trend-bar-col" [title]="bar.tooltip">
-              <div class="trend-bar-stack">
-                <div class="trend-segment sentiment-positive" [style.height.%]="bar.positiveHeight"></div>
-                <div class="trend-segment sentiment-neutral" [style.height.%]="bar.neutralHeight"></div>
-                <div class="trend-segment sentiment-negative" [style.height.%]="bar.negativeHeight"></div>
+        <div class="trend-rows">
+          @for (bar of trendBars(); track bar.date) {
+            <div class="trend-row" [title]="bar.tooltip">
+              <span class="trend-row-label">{{ bar.date | date: 'MMM d' }}</span>
+              <div class="trend-row-track">
+                @if (bar.positiveWidth > 0) {
+                  <div class="trend-segment sentiment-positive" [style.width.%]="bar.positiveWidth"></div>
+                }
+                @if (bar.neutralWidth > 0) {
+                  <div class="trend-segment sentiment-neutral" [style.width.%]="bar.neutralWidth"></div>
+                }
+                @if (bar.negativeWidth > 0) {
+                  <div class="trend-segment sentiment-negative" [style.width.%]="bar.negativeWidth"></div>
+                }
               </div>
-              @if (i % 5 === 0 || i === trendBars().length - 1) {
-                <span class="trend-bar-label">{{ bar.date | date: 'MMM d' }}</span>
-              }
+              <span class="trend-row-count">{{ bar.total }}</span>
             </div>
           }
         </div>
@@ -47,12 +53,12 @@
         </div>
       </div>
     } @else {
-      <p>Not enough data yet.</p>
+      <p class="status-text">Not enough data yet.</p>
     }
   </section>
 
   <section class="panel">
-    <h2>Topics trend (last 30 days)</h2>
+    <h2><lucide-icon name="trending-up" [size]="18" />Topics trend <span class="h2-note">last 30 days</span></h2>
     @if (topicTrendChart(); as chart) {
       <div class="topic-trend-chart">
         <div class="topic-trend-svg-wrap">
@@ -117,12 +123,12 @@
         </div>
       </div>
     } @else {
-      <p>Not enough data yet.</p>
+      <p class="status-text">Not enough data yet.</p>
     }
   </section>
 
   <section class="panel">
-    <h2>Sentiment breakdown</h2>
+    <h2><lucide-icon name="smile" [size]="18" />Sentiment breakdown</h2>
     @if (sentimentSegments().length) {
       <div class="sentiment-chart">
         <div class="sentiment-bar">
@@ -150,7 +156,7 @@
   </section>
 
   <section class="panel">
-    <h2>Top entities</h2>
+    <h2><lucide-icon name="users" [size]="18" />Top entities</h2>
     <div class="panel-grid panel-grid-3">
       <div>
         <h3>Persons</h3>

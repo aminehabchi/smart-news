@@ -7,11 +7,12 @@ import {
   RouterLink,
   RouterLinkActive,
 } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 import { filter, map } from 'rxjs';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, LucideAngularModule],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })

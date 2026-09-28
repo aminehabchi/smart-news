@@ -1,13 +1,14 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { PipelineRun } from '../../models/pipeline.model';
 import { PipelineService } from '../../services/pipeline';
 
 @Component({
   selector: 'app-pipeline-page',
-  imports: [DatePipe],
+  imports: [DatePipe, LucideAngularModule],
   templateUrl: './pipeline-page.html',
   styleUrl: './pipeline-page.scss',
 })

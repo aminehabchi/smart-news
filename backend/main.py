@@ -9,12 +9,12 @@ from pathlib import Path
 from bson import ObjectId
 from bson.errors import InvalidId
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pymongo import ReturnDocument
 
-from db import PIPELINE_RUNS_COLLECTION, ensure_indexes, get_collection
+from db import DELETED_URLS_COLLECTION, PIPELINE_RUNS_COLLECTION, ensure_indexes, get_collection
 from models import (
     Article,
     ArticlePage,
@@ -51,7 +51,7 @@ app = FastAPI(title="NLP Scraper API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200"],
-    allow_methods=["GET", "PUT", "POST"],
+    allow_methods=["GET", "PUT", "POST", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -299,6 +299,30 @@ def get_article(article_id: str):
         raise HTTPException(status_code=404, detail="Article not found")
 
     return _to_article(doc)
+
+
+@app.delete("/api/articles/{article_id}", status_code=204)
+def delete_article(article_id: str):
+    try:
+        object_id = ObjectId(article_id)
+    except InvalidId:
+        logger.warning("Article delete failed: invalid id %r", article_id)
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    doc = get_collection().find_one_and_delete({"_id": object_id})
+    if not doc:
+        logger.warning("Article delete failed: no article with id %s", article_id)
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    # Remember the URL so the scraper doesn't bring the article back.
+    if doc.get("url"):
+        get_collection(DELETED_URLS_COLLECTION).update_one(
+            {"url": doc["url"]},
+            {"$set": {"url": doc["url"], "deleted_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=True,
+        )
+    logger.info("Deleted article %s (%s)", article_id, doc.get("url"))
+    return Response(status_code=204)
 
 
 def _overlap_score(field: str, source_values: list[str], weight: float) -> dict:

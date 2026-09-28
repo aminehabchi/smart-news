@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { Article } from '../../models/article.model';
 import { ArticleService } from '../../services/article';
@@ -8,7 +9,7 @@ import { SavedArticlesService } from '../../services/saved-articles';
 
 @Component({
   selector: 'app-saved-list',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, LucideAngularModule],
   templateUrl: './saved-list.html',
   styleUrl: './saved-list.scss',
 })

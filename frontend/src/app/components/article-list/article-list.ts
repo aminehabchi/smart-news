@@ -1,10 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { Article } from '../../models/article.model';
 import { SourceNamePipe } from '../../pipes/source-name-pipe';
 import { ArticleListFilters, ArticleService } from '../../services/article';
+import { SavedArticlesService } from '../../services/saved-articles';
 
 const ADVANCED_FILTER_KEYS: (keyof ArticleListFilters)[] = [
   'predicted_topic',
@@ -19,7 +21,7 @@ const ADVANCED_FILTER_KEYS: (keyof ArticleListFilters)[] = [
 
 @Component({
   selector: 'app-article-list',
-  imports: [RouterLink, DatePipe, SourceNamePipe],
+  imports: [RouterLink, DatePipe, SourceNamePipe, LucideAngularModule],
   templateUrl: './article-list.html',
   styleUrl: './article-list.scss',
 })
@@ -27,6 +29,7 @@ export class ArticleList implements OnInit {
   private readonly articleService = inject(ArticleService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly savedArticles = inject(SavedArticlesService);
 
   readonly pageSize = 18;
 

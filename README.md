@@ -91,7 +91,7 @@ articles missing the relevant field:
 
 ### 5. Start the backend API
 
-Serves `http://localhost:8000`, and re-runs the scraping pipeline every hour
+Serves `http://localhost:8001`, and re-runs the scraping pipeline every hour
 automatically.
 
 ```bash
@@ -109,7 +109,7 @@ Serves `http://localhost:4200`.
 ```
 
 Then open `http://localhost:4200`. Interactive API docs are at
-`http://localhost:8000/docs`.
+`http://localhost:8001/docs`.
 
 ## Stopping
 

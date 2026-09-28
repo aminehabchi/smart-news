@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { BarList } from '../bar-list/bar-list';
 import { Stats } from '../../models/stats.model';
@@ -11,7 +12,7 @@ const TOPIC_CHART_PADDING = { left: 30, right: 8, top: 10, bottom: 24 };
 
 @Component({
   selector: 'app-stats-page',
-  imports: [BarList, DatePipe],
+  imports: [BarList, DatePipe, LucideAngularModule],
   templateUrl: './stats-page.html',
   styleUrl: './stats-page.scss',
 })
@@ -42,9 +43,10 @@ export class StatsPage implements OnInit {
       const total = d.positive + d.neutral + d.negative;
       return {
         date: d.date,
-        positiveHeight: (d.positive / maxTotal) * 100,
-        neutralHeight: (d.neutral / maxTotal) * 100,
-        negativeHeight: (d.negative / maxTotal) * 100,
+        total,
+        positiveWidth: (d.positive / maxTotal) * 100,
+        neutralWidth: (d.neutral / maxTotal) * 100,
+        negativeWidth: (d.negative / maxTotal) * 100,
         tooltip: `${d.date}: ${total} article${total === 1 ? '' : 's'} — ${d.positive} positive, ${d.neutral} neutral, ${d.negative} negative`,
       };
     });

@@ -1,26 +1,58 @@
-<h1>Pipeline</h1>
-
-<div class="run-now-row">
-  <button type="button" class="run-now-btn" (click)="runNow()" [disabled]="triggering() || isRunning()">
-    {{ isRunning() ? 'Run in progress…' : triggering() ? 'Starting…' : '▶ Run now' }}
+<div class="page-header">
+  <h1 class="page-title">Pipeline</h1>
+  <button
+    type="button"
+    class="btn btn-accent"
+    (click)="runNow()"
+    [disabled]="triggering() || isRunning()"
+  >
+    @if (isRunning() || triggering()) {
+      <lucide-icon name="loader-circle" [size]="16" class="spin" />
+      {{ isRunning() ? 'Run in progress…' : 'Starting…' }}
+    } @else {
+      <lucide-icon name="play" [size]="16" />Run now
+    }
   </button>
-  @if (triggerError()) {
-    <span class="trigger-error">{{ triggerError() }}</span>
-  }
 </div>
 
+@if (triggerError()) {
+  <p class="trigger-error"><lucide-icon name="triangle-alert" [size]="16" />{{ triggerError() }}</p>
+}
+
 @if (loading()) {
-  <p>Loading…</p>
+  <p class="status-text"><lucide-icon name="loader-circle" class="spin" />Loading…</p>
 } @else if (runs().length === 0) {
-  <p>No pipeline runs yet.</p>
+  <p class="status-text">No pipeline runs yet.</p>
 } @else {
   <div class="run-list">
     @for (run of runs(); track run.id) {
       <div class="run-row">
-        <span class="run-status" [class]="'status-' + run.status">{{ run.status }}</span>
-        <span class="run-started">{{ run.started_at | date: 'medium' }}</span>
-        <span class="run-trigger">{{ run.trigger }}</span>
-        <span class="run-duration">{{ durationFor(run) }}</span>
+        <span class="run-status" [class]="'status-' + run.status">
+          <lucide-icon
+            [name]="
+              run.status === 'success'
+                ? 'circle-check'
+                : run.status === 'failed'
+                  ? 'circle-x'
+                  : 'loader-circle'
+            "
+            [size]="18"
+            [class.spin]="run.status === 'running'"
+          />
+          {{ run.status }}
+        </span>
+        <span class="run-started">{{ run.started_at | date: 'MMM d, y, h:mm a' }}</span>
+        <span class="run-meta">
+          <lucide-icon
+            [name]="run.trigger === 'manual' ? 'mouse-pointer-click' : 'calendar-clock'"
+            [size]="16"
+          />
+          {{ run.trigger }}
+        </span>
+        <span class="run-meta">
+          <lucide-icon name="timer" [size]="16" />
+          {{ durationFor(run) }}
+        </span>
         @if (run.status === 'failed' && run.error) {
           <details class="run-error">
             <summary>View error</summary>

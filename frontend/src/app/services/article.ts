@@ -84,6 +84,10 @@ export class ArticleService {
     return this.http.get<Article[]>(`${API_BASE_URL}/saved`);
   }
 
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${API_BASE_URL}/articles/${id}`);
+  }
+
   setSaved(id: string, saved: boolean): Observable<Article> {
     const params = new HttpParams().set('saved', saved);
     return this.http.put<Article>(`${API_BASE_URL}/articles/${id}/save`, null, { params });

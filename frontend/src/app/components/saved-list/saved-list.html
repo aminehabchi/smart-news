@@ -1,23 +1,30 @@
-<h1>Saved for Later</h1>
+<h1 class="page-title">Reading list</h1>
 
 @if (loading()) {
-  <p>Loading…</p>
+  <p class="status-text"><lucide-icon name="loader-circle" class="spin" />Loading…</p>
 } @else if (articles().length === 0) {
-  <p>No saved articles yet. Open an article and click "Save for later".</p>
+  <div class="empty">
+    <lucide-icon name="bookmark" [size]="32" />
+    <p>No saved articles yet. Tap the bookmark icon on any story to save it for later.</p>
+  </div>
 }
 
-<div class="article-grid">
+<div class="story-list">
   @for (article of articles(); track article.id) {
-    <div class="article-card">
-      <a [routerLink]="['/articles', article.id]">
+    <article class="story">
+      <a class="story-link" [routerLink]="['/articles', article.id]">
+        @if (article.author.name) {
+          <div class="story-byline">{{ article.author.name }}</div>
+        }
         <h2>{{ article.title }}</h2>
+        <p class="excerpt">{{ article.body?.slice(0, 160) }}&hellip;</p>
       </a>
-      <p class="excerpt">{{ article.body?.slice(0, 140) }}&hellip;</p>
-      <div class="meta">
-        <span class="author">{{ article.author.name }}</span>
-        <span class="date">{{ article.publish_date | date: 'mediumDate' }}</span>
+      <div class="story-footer">
+        <span>{{ article.publish_date | date: 'MMM d, y' }}</span>
+        <button class="icon-btn unsave-btn" (click)="unsave(article.id)" title="Remove from saved">
+          <lucide-icon name="bookmark-x" />
+        </button>
       </div>
-      <button class="unsave-btn" (click)="unsave(article.id)">Remove</button>
-    </div>
+    </article>
   }
 </div>

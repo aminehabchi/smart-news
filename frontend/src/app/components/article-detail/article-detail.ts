@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { Article } from '../../models/article.model';
 import { ReadingTimePipe } from '../../pipes/reading-time-pipe';
@@ -10,7 +11,7 @@ import { SavedArticlesService } from '../../services/saved-articles';
 
 @Component({
   selector: 'app-article-detail',
-  imports: [DatePipe, RouterLink, SourceNamePipe, ReadingTimePipe],
+  imports: [DatePipe, RouterLink, SourceNamePipe, ReadingTimePipe, LucideAngularModule],
   templateUrl: './article-detail.html',
   styleUrl: './article-detail.scss',
 })
@@ -22,6 +23,9 @@ export class ArticleDetail implements OnInit {
 
   readonly article = signal<Article | null>(null);
   readonly relatedArticles = signal<Article[]>([]);
+  readonly confirmingDelete = signal(false);
+  readonly deleting = signal(false);
+  readonly deleteError = signal('');
 
   readonly entityGroups = computed(() => {
     const entities = this.article()?.entities;
@@ -30,16 +34,17 @@ export class ArticleDetail implements OnInit {
     }
     return (
       [
-        { label: 'Persons', key: 'persons', values: entities.persons },
-        { label: 'Organizations', key: 'organizations', values: entities.organizations },
-        { label: 'Locations', key: 'locations', values: entities.locations },
-        { label: 'Dates & Times', key: 'dates_times', values: entities.dates_times },
+        { label: 'Persons', key: 'persons', icon: 'users', values: entities.persons },
+        { label: 'Organizations', key: 'organizations', icon: 'building-2', values: entities.organizations },
+        { label: 'Locations', key: 'locations', icon: 'map-pin', values: entities.locations },
+        { label: 'Dates & Times', key: 'dates_times', icon: 'calendar-clock', values: entities.dates_times },
         {
           label: 'Quantities & Percentages',
           key: 'quantities_percentages',
+          icon: 'hash',
           values: entities.quantities_percentages,
         },
-      ] satisfies { label: string; key: keyof ArticleListFilters; values: string[] }[]
+      ] satisfies { label: string; key: keyof ArticleListFilters; icon: string; values: string[] }[]
     ).filter((group) => group.values.length > 0);
   });
 
@@ -72,6 +77,8 @@ export class ArticleDetail implements OnInit {
       }
       this.article.set(null);
       this.relatedArticles.set([]);
+      this.confirmingDelete.set(false);
+      this.deleteError.set('');
       this.articleService.get(id).subscribe((article) => this.article.set(article));
       this.articleService.getRelated(id).subscribe((articles) => this.relatedArticles.set(articles));
     });
@@ -92,5 +99,21 @@ export class ArticleDetail implements OnInit {
     if (id) {
       this.savedArticles.toggle(id);
     }
+  }
+
+  deleteArticle(): void {
+    const id = this.article()?.id;
+    if (!id) {
+      return;
+    }
+    this.deleting.set(true);
+    this.deleteError.set('');
+    this.articleService.delete(id).subscribe({
+      next: () => this.router.navigate(['/']),
+      error: () => {
+        this.deleting.set(false);
+        this.deleteError.set("Couldn't delete this article. Please try again.");
+      },
+    });
   }
 }

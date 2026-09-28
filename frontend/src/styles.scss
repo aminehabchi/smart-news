@@ -1,36 +1,54 @@
+// Palette and type modeled on medium.com: near-black text on white, soft grey
+// dividers, a single green accent, and a serif for headlines/reading text
+// (Source Serif 4 standing in for Charter, Inter for Sohne).
 :root {
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-serif: 'Source Serif 4', charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+
+  // Page width shared by the header and main content; the gutter shrinks on
+  // small screens.
+  --content-max-width: 1440px;
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+  --reading-width: 860px;
+
   --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #f6f8fa;
-  --color-border-default: #d0d7de;
-  --color-border-muted: #d8dee4;
-  --color-fg-default: #1f2328;
-  --color-fg-muted: #656d76;
-  --color-accent-fg: #0969da;
-  --color-accent-emphasis: #0969da;
-  --color-accent-subtle: #ddf4ff;
-  --color-success-fg: #1a7f37;
-  --color-danger-fg: #cf222e;
-  --color-header-bg: #24292f;
-  --color-header-fg: #ffffff;
-  --color-shadow: rgba(31, 35, 40, 0.08);
+  --color-canvas-subtle: #f9f9f9;
+  --color-canvas-inset: #f2f2f2;
+  --color-border-default: #e5e5e5;
+  --color-border-muted: #f2f2f2;
+  --color-fg-default: #242424;
+  --color-fg-muted: #6b6b6b;
+  --color-accent-fg: #1a8917;
+  --color-accent-emphasis: #1a8917;
+  --color-accent-subtle: #e8f3e8;
+  --color-button-bg: #191919;
+  --color-button-fg: #ffffff;
+  --color-success-fg: #1a8917;
+  --color-danger-fg: #c94a4a;
+  --color-header-bg: #ffffff;
+  --color-header-fg: #242424;
+  --color-shadow: rgba(0, 0, 0, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-canvas-default: #0d1117;
-    --color-canvas-subtle: #161b22;
-    --color-border-default: #30363d;
-    --color-border-muted: #21262d;
-    --color-fg-default: #e6edf3;
-    --color-fg-muted: #848d97;
-    --color-accent-fg: #4493f8;
-    --color-accent-emphasis: #1f6feb;
-    --color-accent-subtle: #388bfd26;
-    --color-success-fg: #3fb950;
-    --color-danger-fg: #f85149;
-    --color-header-bg: #010409;
-    --color-header-fg: #e6edf3;
-    --color-shadow: rgba(1, 4, 9, 0.4);
+    --color-canvas-default: #121212;
+    --color-canvas-subtle: #1a1a1a;
+    --color-canvas-inset: #242424;
+    --color-border-default: #2e2e2e;
+    --color-border-muted: #242424;
+    --color-fg-default: #e6e6e6;
+    --color-fg-muted: #a8a8a8;
+    --color-accent-fg: #4cb44a;
+    --color-accent-emphasis: #1a8917;
+    --color-accent-subtle: rgba(76, 180, 74, 0.15);
+    --color-button-bg: #f2f2f2;
+    --color-button-fg: #121212;
+    --color-success-fg: #4cb44a;
+    --color-danger-fg: #e06c6c;
+    --color-header-bg: #121212;
+    --color-header-fg: #e6e6e6;
+    --color-shadow: rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -42,19 +60,171 @@ body {
   margin: 0;
   background: var(--color-canvas-default);
   color: var(--color-fg-default);
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.016em;
 }
 
 a {
-  color: var(--color-accent-fg);
+  color: inherit;
 }
 
-button {
+button,
+input,
+select {
   font-family: inherit;
+}
+
+lucide-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+// Medium-style pill buttons, shared across pages.
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.btn-primary {
+  background: var(--color-button-bg);
+  border: 1px solid var(--color-button-bg);
+  color: var(--color-button-fg);
+
+  &:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+}
+
+.btn-accent {
+  background: var(--color-accent-emphasis);
+  border: 1px solid var(--color-accent-emphasis);
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.btn-danger {
+  background: var(--color-danger-fg);
+  border: 1px solid var(--color-danger-fg);
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-fg-default);
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-fg-default);
+  }
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-fg-muted);
+
+  &:hover:not(:disabled) {
+    color: var(--color-fg-default);
+  }
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  color: var(--color-fg-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-fg-default);
+  }
+
+  &.active {
+    color: var(--color-fg-default);
+  }
+}
+
+// Soft grey pill used for tags/topics/entities.
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--color-canvas-inset);
+  color: var(--color-fg-default);
+  border: none;
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  text-decoration: none;
+  text-transform: capitalize;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-border-default);
+  }
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 2rem;
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.status-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-fg-muted);
+  font-size: 0.95rem;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
