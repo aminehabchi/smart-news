@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
-app = FastAPI(title="NLP Scraper API", lifespan=lifespan)
+app = FastAPI(title="SmartNews API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

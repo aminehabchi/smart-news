@@ -1,6 +1,6 @@
 # backend
 
-The API layer of the NLP Scraper project, built with FastAPI.
+The API layer of the SmartNews project, built with FastAPI.
 
 Serves the articles stored in MongoDB (`storage`) by `pipeline`, for
 `frontend` to consume, and runs the scraping pipeline itself on an hourly

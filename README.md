@@ -1,4 +1,4 @@
-# NLP Scraper
+# SmartNews
 
 A full-stack pipeline that scrapes tech news (TechCrunch, The Verge, Ars
 Technica), cleans and analyzes it with NLP — named entity recognition
@@ -9,6 +9,8 @@ through a REST API and an Angular UI with full-text search, entity/topic/
 sentiment filtering, CSV export of any filtered view, related-article
 suggestions, a stats dashboard (including a 30-day sentiment trend), a
 pipeline run-history/manual-trigger view, and save-for-later.
+
+![SmartNews UI](docs/screenshot.png)
 
 ## Tech stack
 

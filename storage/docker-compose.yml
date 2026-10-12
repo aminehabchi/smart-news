@@ -1,7 +1,7 @@
 services:
   mongo:
     build: .
-    container_name: nlp-scraper-mongo
+    container_name: smart-news-mongo
     restart: unless-stopped
     ports:
       - "${MONGO_PORT:-27017}:27017"

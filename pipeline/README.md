@@ -1,6 +1,6 @@
 # pipeline
 
-The data-processing pipeline of the NLP Scraper project.
+The data-processing pipeline of the SmartNews project.
 
 `orchestrator.py` scrapes the latest articles from TechCrunch, The Verge,
 and Ars Technica with Playwright, cleans the text, runs NER, scores

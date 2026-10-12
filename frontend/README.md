@@ -1,6 +1,6 @@
 # frontend
 
-The UI of the NLP Scraper project, built with Angular (generated via
+The UI of the SmartNews project, built with Angular (generated via
 `ng new`, standalone components, routing, signals).
 
 Displays the articles stored in `storage` (MongoDB), served by `backend`'s API.
